@@ -240,12 +240,15 @@ let colMap=[]; // colMap[col] = array of particles in that column, sorted top→
 let reflowTimer=0;
 
 let dpr=window.devicePixelRatio||1;
-const isMobile=/Android|iPhone|iPad|iPod|HarmonyOS/i.test(navigator.userAgent)||('ontouchstart' in window&&innerWidth<1400);
+const isPhone=/iPhone|iPod/i.test(navigator.userAgent)||(('ontouchstart' in window)&&Math.max(innerWidth,innerHeight)<850);
+const isTablet=!isPhone&&(/iPad|Android(?!.*Mobile)|HarmonyOS/i.test(navigator.userAgent)||(('ontouchstart' in window)&&Math.max(innerWidth,innerHeight)>=850));
+const isMobile=isPhone||isTablet;
 function resize(){
   W=innerWidth;H=innerHeight;
   dpr=window.devicePixelRatio||1;
   // Cap DPR on mobile to avoid excessive canvas size
-  if(isMobile&&dpr>2)dpr=2;
+  if(isPhone&&dpr>2)dpr=2;
+  if(isTablet&&dpr>2)dpr=2;
   canvas.width=W*dpr;canvas.height=H*dpr;
   canvas.style.width=W+'px';canvas.style.height=H+'px';
   ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -275,7 +278,7 @@ function buildP(text){
   particles=[];holes=[];consumed=[];stains=[];trail=[];splashes=[];totalHC=0;colMap=[];reflowTimer=0;
   FS=T.fontSize.v;LH=FS*1.35;CW=FS*.8;
   COLS=Math.floor((W-16)/CW);ROWS=Math.floor((H-8)/LH);
-  let t=text.replace(/[\n\r\s]/g,'');const maxP=isMobile?2000:COLS*ROWS;const need=Math.min(COLS*ROWS,maxP);
+  let t=text.replace(/[\n\r\s]/g,'');const maxP=isPhone?2500:isTablet?6000:COLS*ROWS;const need=Math.min(COLS*ROWS,maxP);
   while(t.length<need)t+=t;t=t.slice(0,need);const ch=[...t];
   const aMin=T.alphaMin.v,aRange=T.alphaMax.v-aMin;
   for(let c=0;c<COLS;c++)colMap[c]=[];
