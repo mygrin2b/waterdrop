@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>文字黑洞 · 拾句成诗</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@400;600;700&family=Cormorant+Garamond:wght@400;600&family=Ma+Shan+Zheng&family=ZCOOL+KuaiLe&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Zhi+Mang+Xing&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.cnpmjs.org/css2?family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet" onerror="">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>if(typeof JSZip==='undefined'){const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';document.head.appendChild(s)}</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#F5F0E8;--paper:#FAF7F2;--cream:#FFF8EE;--ink:#3A322A;--ink-light:#6B5E52;--ink-faint:#A89888;--ink-ghost:#C8BBAD;--sand:#C8B598;--sand-light:#E2D5C3;--sand-lighter:#EDE6DA;--terracotta:#C4836A;--terra-soft:rgba(196,131,106,.10);--pool-dark:#2A231C;--pool-mid:#4A3F35}
+html,body{height:100%;height:100dvh;overflow:hidden;overscroll-behavior:none;-webkit-overflow-scrolling:auto}
+body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC','Georgia','SimSun',serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;touch-action:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#canvas{display:block;position:fixed;top:0;left:0;cursor:crosshair;touch-action:none}
+
+/* Settings overlay */
+#so{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--bg)}#so.hidden{display:none}
+.warm-glow{position:absolute;width:55vw;height:55vw;max-width:600px;max-height:600px;top:50%;left:50%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,248,235,.7) 0%,transparent 68%);filter:blur(50px);pointer-events:none}
+.panel{position:relative;z-index:2;background:var(--paper);border:1px solid var(--sand-light);border-radius:20px;padding:36px 38px 30px;width:450px;max-width:92vw;max-height:90vh;overflow-y:auto;box-shadow:0 4px 40px rgba(58,50,42,.06)}
+.panel::-webkit-scrollbar{width:4px}.panel::-webkit-scrollbar-thumb{background:var(--sand-light);border-radius:2px}
+.deco{width:40px;height:1px;background:var(--sand);margin:0 auto 18px;opacity:.55}
+.panel h1{font-family:'ZCOOL XiaoWei',serif;font-size:28px;text-align:center;font-weight:400;letter-spacing:5px;margin-bottom:4px}
+.panel .sub{text-align:center;font-size:12px;color:var(--ink-faint);margin-bottom:28px;letter-spacing:.8px;line-height:1.7}
+.field{margin-bottom:18px}.fl{display:block;font-size:11.5px;color:var(--ink-light);margin-bottom:6px;letter-spacing:.5px}.fl .opt{color:var(--ink-ghost);font-size:10.5px}
+.field input,.field textarea,.field select{width:100%;padding:9px 14px;border-radius:9px;background:var(--cream);border:1px solid var(--sand-light);color:var(--ink);font-family:inherit;font-size:13px;outline:none;transition:border-color .25s;letter-spacing:.6px}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--sand)}
+.field textarea{resize:vertical;min-height:60px;line-height:1.7}
+.field select{cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23A89888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:5px 12px;border-radius:20px;background:transparent;border:1px solid var(--sand-light);font-size:12px;cursor:pointer;transition:all .25s;color:var(--ink-light);letter-spacing:.3px;display:inline-flex;align-items:center;gap:4px}
+.chip .ic{font-size:10px;opacity:.5}.chip:hover{border-color:var(--sand);color:var(--ink)}.chip.on{background:var(--terra-soft);border-color:rgba(196,131,106,.4);color:var(--terracotta)}
+.upload-zone{border:1.5px dashed var(--sand-light);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:all .25s;color:var(--ink-faint);font-size:12px;line-height:1.5}
+.upload-zone:hover{border-color:var(--sand);background:rgba(255,248,238,.5)}.upload-zone.has-file{border-style:solid;border-color:var(--terracotta);color:var(--terracotta);background:var(--terra-soft)}
+.upload-zone input{display:none}.file-info{font-size:10.5px;color:var(--ink-ghost);margin-top:5px;line-height:1.4}
+.ctrigger{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink-ghost);cursor:pointer;margin-bottom:10px;letter-spacing:.4px;transition:color .2s}.ctrigger:hover{color:var(--ink-faint)}.ctrigger .arr{display:inline-block;transition:transform .25s;font-size:9px}.ctrigger .arr.open{transform:rotate(90deg)}
+.cbody{overflow:hidden;max-height:0;transition:max-height .35s ease;opacity:0}.cbody.open{max-height:300px;opacity:1;transition:max-height .35s ease,opacity .3s ease .1s}
+.sep{width:100%;height:1px;background:var(--sand-light);margin:22px 0 18px}
+.btn-go{display:block;width:100%;padding:13px 0;background:var(--ink);border:none;border-radius:11px;color:var(--cream);font-family:'Noto Serif SC',serif;font-size:14px;cursor:pointer;transition:all .3s;letter-spacing:4px}.btn-go:hover{background:var(--pool-mid);transform:translateY(-1px);box-shadow:0 8px 24px rgba(58,50,42,.1)}
+
+/* HUD */
+#hud{position:fixed;top:0;left:0;right:0;padding:11px 18px;display:none;align-items:center;gap:12px;z-index:10;background:linear-gradient(to bottom,rgba(245,240,232,.92) 50%,transparent);pointer-events:none}#hud.show{display:flex}#hud>*{pointer-events:auto}
+.hud-brand{font-family:'ZCOOL XiaoWei',serif;font-size:14px;color:var(--ink);letter-spacing:3px;opacity:.5;white-space:nowrap}
+.hud-prog{flex:1;max-width:160px;display:flex;flex-direction:column;gap:3px}.hud-prog-top{font-size:10px;color:var(--ink-faint);display:flex;justify-content:space-between}
+.hud-bar{height:3px;background:var(--sand-lighter);border-radius:2px;overflow:hidden}.hud-fill{height:100%;width:0%;border-radius:2px;background:linear-gradient(90deg,var(--sand),var(--terracotta));transition:width .4s}
+.hud-stat{font-size:11px;color:var(--ink-faint);white-space:nowrap}.hud-stat b{color:var(--ink);font-size:12px;font-weight:600}
+#hint{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--ink-ghost);z-index:10;pointer-events:none;letter-spacing:1.5px;animation:breathe 3.5s ease-in-out infinite}#hint.gone{opacity:0;transition:opacity .6s}
+#ai-toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:rgba(250,247,242,.96);border:1px solid var(--sand-light);border-radius:24px;padding:8px 20px;font-size:12px;color:var(--ink-light);z-index:50;display:none;align-items:center;gap:8px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}#ai-toast.show{display:flex}.spinner{width:12px;height:12px;border:2px solid var(--sand-light);border-top-color:var(--terracotta);border-radius:50%;animation:spin .9s linear infinite}
+
+/* Reveal */
+#reveal{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center}#reveal.show{display:flex}
+.rv-glow{position:absolute;width:50%;height:50%;top:25%;left:25%;border-radius:50%;background:radial-gradient(circle,rgba(255,245,225,.55) 0%,transparent 60%);filter:blur(50px);pointer-events:none}
+.rv-line{width:1px;height:48px;background:linear-gradient(to bottom,transparent,var(--sand));margin-bottom:22px;animation:fadeD 1s ease .15s both}
+.rv-tag{font-size:11px;color:var(--ink-faint);letter-spacing:9px;margin-bottom:26px;animation:fadeU 1s ease .3s both}
+.rv-sentence{font-family:'ZCOOL XiaoWei',serif;font-size:clamp(22px,4.8vw,50px);color:var(--ink);text-align:center;max-width:78%;line-height:1.85;letter-spacing:4px;font-weight:400;animation:fadeU 1.3s ease .55s both}
+.rv-reason{font-size:13px;color:var(--ink-faint);margin-top:20px;max-width:55%;text-align:center;line-height:1.7;animation:fadeU 1s ease .85s both;font-style:italic}
+.rv-sep{width:36px;height:1px;background:var(--sand);margin:32px 0;opacity:.45;animation:fadeU .8s ease 1.05s both}
+.rv-stats{display:flex;gap:44px;animation:fadeU 1s ease 1.15s both}.rv-stat{text-align:center}.rv-num{font-size:24px;color:var(--ink);font-weight:400;font-family:'Cormorant Garamond',serif}.rv-lbl{font-size:10px;color:var(--ink-ghost);margin-top:4px;letter-spacing:1.5px}
+.btn-again{margin-top:36px;padding:10px 34px;background:transparent;border:1px solid var(--sand-light);border-radius:9px;color:var(--ink-light);font-family:inherit;font-size:12px;cursor:pointer;transition:all .3s;letter-spacing:3px;animation:fadeU 1s ease 1.35s both}.btn-again:hover{border-color:var(--sand);color:var(--ink)}
+
+/* ═══ TUNING PANEL ═══ */
+#tune-btn{position:fixed;top:12px;right:16px;z-index:20;width:32px;height:32px;border-radius:8px;background:rgba(250,247,242,.8);border:1px solid var(--sand-light);cursor:pointer;display:none;align-items:center;justify-content:center;font-size:16px;color:var(--ink-faint);transition:all .2s;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#tune-btn.show{display:flex}#tune-btn:hover{background:var(--paper);color:var(--ink);border-color:var(--sand)}
+#tune{position:fixed;top:0;right:0;bottom:0;width:280px;background:rgba(250,247,242,.97);border-left:1px solid var(--sand-light);z-index:30;transform:translateX(100%);transition:transform .3s ease;overflow-y:auto;padding:16px 18px 24px;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+#tune.open{transform:translateX(0)}
+#tune::-webkit-scrollbar{width:3px}#tune::-webkit-scrollbar-thumb{background:var(--sand-light);border-radius:2px}
+#tune h3{font-size:11px;color:var(--terracotta);letter-spacing:2px;margin:16px 0 10px;padding-bottom:4px;border-bottom:1px solid var(--sand-lighter);text-transform:uppercase}
+#tune h3:first-child{margin-top:4px}
+.tune-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.tune-label{font-size:10.5px;color:var(--ink-light);letter-spacing:.3px;flex-shrink:0}
+.tune-val{font-size:10px;color:var(--ink-faint);min-width:32px;text-align:right;font-family:'Cormorant Garamond',serif;font-size:12px}
+.tune-slider{-webkit-appearance:none;appearance:none;width:90px;height:3px;border-radius:2px;background:var(--sand-lighter);outline:none;margin:0 8px;flex-shrink:1}
+.tune-slider::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--ink-faint);cursor:pointer;border:2px solid var(--paper);transition:background .2s}
+.tune-slider::-webkit-slider-thumb:hover{background:var(--terracotta)}
+.tune-select{-webkit-appearance:none;appearance:none;padding:3px 8px;border-radius:6px;border:1px solid var(--sand-light);background:var(--cream);color:var(--ink);font-size:10px;outline:none;cursor:pointer;max-width:120px;font-family:inherit}
+.tune-select:focus{border-color:var(--sand)}
+.tune-close{position:sticky;top:0;background:rgba(250,247,242,.95);padding:4px 0 8px;display:flex;justify-content:space-between;align-items:center;z-index:1}
+.tune-close span{font-size:11px;color:var(--ink-faint);letter-spacing:1px}
+.tune-close button{background:none;border:none;font-size:16px;cursor:pointer;color:var(--ink-faint);padding:2px 4px}
+
+@keyframes fadeU{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeD{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes breathe{0%,100%{opacity:.3}50%{opacity:.6}}
+</style>
+</head>
+<body>
+<!-- Settings -->
+<div id="so"><div class="warm-glow"></div><div class="panel"><div class="deco"></div><h1>文字黑洞</h1>
+<p class="sub">水滴漫游，吞噬四方文字<br>在废墟中拾字，压缩成一句洞见</p>
+<div class="field"><span class="fl">情绪 · 水滴偏好</span><div class="chips"><span class="chip on" data-v="自由发挥"><span class="ic">◯</span>自由发挥</span><span class="chip" data-v="温暖治愈"><span class="ic">☀</span>温暖治愈</span><span class="chip" data-v="孤独寂寞"><span class="ic">☾</span>孤独寂寞</span><span class="chip" data-v="荒诞幽默"><span class="ic">◇</span>荒诞幽默</span><span class="chip" data-v="哲理深邃"><span class="ic">∞</span>哲理深邃</span><span class="chip" data-v="浪漫唯美"><span class="ic">❋</span>浪漫唯美</span></div></div>
+<div class="field"><span class="fl">偏爱的字 <span class="opt">（水滴主动寻找）</span></span><input type="text" id="inp-fav" placeholder="月  自由  梦  光  远方"></div>
+<div class="field"><span class="fl">文本来源</span><select id="inp-src"><option value="default">默认 · 自我肯定</option><option value="poetry">唐诗宋词</option><option value="philosophy">哲学语录</option><option value="news">当代新闻</option><option value="file">上传文件 (MD / EPUB / TXT)</option><option value="custom">直接粘贴</option></select></div>
+<div class="field" id="file-wrap" style="display:none"><div class="upload-zone" id="drop-zone"><div>📄 点击选择或拖放文件<br><span style="font-size:10px;opacity:.6">.md / .epub / .txt</span></div><input type="file" id="file-input" accept=".md,.epub,.txt,.text,.markdown"></div><div class="file-info" id="file-info"></div></div>
+<div class="field" id="custom-wrap" style="display:none"><span class="fl">粘贴文字</span><textarea id="inp-custom" placeholder="粘贴…"></textarea></div>
+<div class="ctrigger" id="api-toggle"><span class="arr" id="api-arrow">▸</span><span>AI 接口设置</span></div>
+<div class="cbody" id="api-body"><div class="field"><span class="fl">API 地址</span><input type="text" id="inp-api-url" value="https://api.moonshot.cn/v1/chat/completions"></div><div class="field"><span class="fl">API Key</span><input type="password" id="inp-api-key" value="sk-rJECXVRv1JHkzBa2kw0iBtkoSdHI82eYHRMzfvJzrcHZ57GU"></div><div class="field"><span class="fl">模型</span><input type="text" id="inp-api-model" value="moonshot-v1-32k"></div><p style="font-size:10px;color:var(--ink-ghost);line-height:1.5;margin-top:-4px">留空 = 本地拼字</p></div>
+<div class="sep"></div><button class="btn-go" id="btn-start">释放水滴</button></div></div>
+
+<!-- HUD -->
+<div id="hud"><div class="hud-brand">文字黑洞</div><div class="hud-prog"><div class="hud-prog-top"><span>吞噬</span><span id="hud-pct">0%</span></div><div class="hud-bar"><div class="hud-fill" id="hud-fill"></div></div></div><div class="hud-stat">水滴 <b id="hud-holes">0</b></div><div class="hud-stat">收集 <b id="hud-chars">0</b></div></div>
+<canvas id="canvas"></canvas>
+<div id="hint" style="display:none">轻触画布，放置水滴</div>
+<div id="ai-toast"><div class="spinner"></div><span id="ai-toast-text">拾字中…</span></div>
+
+<!-- Tune button -->
+<div id="tune-btn" title="调参">⚙</div>
+
+<!-- Tuning panel -->
+<div id="tune">
+<div class="tune-close"><span>实时调参</span><button onclick="document.getElementById('tune').classList.remove('open')">✕</button></div>
+<h3>物理</h3>
+<div id="tune-sliders"></div>
+</div>
+
+<!-- Reveal -->
+<div id="reveal"><div class="rv-glow"></div><div class="rv-line"></div><div class="rv-tag">废 墟 拾 字</div><div class="rv-sentence" id="rv-sent"></div><div class="rv-reason" id="rv-reason"></div><div class="rv-sep"></div><div class="rv-stats"><div class="rv-stat"><div class="rv-num" id="rv-total">0</div><div class="rv-lbl">总字符</div></div><div class="rv-stat"><div class="rv-num" id="rv-eaten">0</div><div class="rv-lbl">已吞噬</div></div><div class="rv-stat"><div class="rv-num" id="rv-holes">0</div><div class="rv-lbl">水滴</div></div></div><button class="btn-again" onclick="location.reload()">再来一次</button></div>
+
+<script>
+/* ═══════ TUNABLE CONFIG ═══════ */
+const T={
+  // 物理
+  gravity:    {v:600, min:50,  max:2000, step:50,  label:'引力强度',     group:'物理'},
+  attractR:   {v:200, min:50,  max:500,  step:10,  label:'吸引半径',     group:'物理'},
+  consumeR:   {v:0.8, min:0.3, max:2.0,  step:0.1, label:'吞噬距离(×字宽)', group:'物理'},
+  swirlStr:   {v:0.25,min:0,   max:1.0,  step:0.05,label:'漩涡强度',     group:'物理'},
+  mergeD:     {v:55,  min:20,  max:150,  step:5,   label:'融合距离',     group:'物理'},
+  idleTime:   {v:3.5, min:1,   max:10,   step:0.5, label:'空域消散(秒)', group:'物理'},
+  fadeDur:    {v:1.8, min:0.5, max:5,    step:0.1, label:'消散速度(秒)', group:'物理'},
+  // 运动
+  baseSpeed:  {v:55,  min:10,  max:200,  step:5,   label:'基础速度',     group:'运动'},
+  seekBoost:  {v:40,  min:0,   max:150,  step:5,   label:'觅食加速',     group:'运动'},
+  seekRange:  {v:350, min:50,  max:800,  step:25,  label:'嗅觉范围',     group:'运动'},
+  returnStr:  {v:0.6, min:0,   max:3.0,  step:0.1, label:'回弹力度',     group:'运动'},
+  fallGrav:   {v:120, min:0,   max:500,  step:10,  label:'坠落重力',     group:'运动'},
+  // 文字
+  fontSize:   {v:16,  min:10,  max:28,   step:1,   label:'字号',         group:'文字'},
+  fontFamily: {v:'Noto Serif SC', type:'select', label:'字体', group:'文字',
+    options:[
+      {v:'Noto Serif SC',   label:'思源宋体'},
+      {v:'Noto Sans SC',    label:'思源黑体'},
+      {v:'ZCOOL XiaoWei',   label:'站酷小薇'},
+      {v:'ZCOOL KuaiLe',    label:'站酷快乐'},
+      {v:'Ma Shan Zheng',   label:'马善政楷书'},
+      {v:'Liu Jian Mao Cao',label:'流建毛草'},
+      {v:'Long Cang',       label:'龙藏'},
+      {v:'Zhi Mang Xing',   label:'芝忙行'},
+      {v:'Georgia',         label:'Georgia'},
+      {v:'SimSun',          label:'宋体(系统)'},
+      {v:'KaiTi',           label:'楷体(系统)'},
+      {v:'SimHei',          label:'黑体(系统)'},
+      {v:'FangSong',        label:'仿宋(系统)'},
+    ]},
+  fontWeight: {v:600, min:300, max:900,  step:100, label:'字重',         group:'文字'},
+  alphaMin:   {v:0.25,min:0.05,max:0.8,  step:0.05,label:'最浅透明度',   group:'文字'},
+  alphaMax:   {v:0.95,min:0.3, max:1.0,  step:0.05,label:'最深透明度',   group:'文字'},
+  inkDarkR:   {v:18,  min:0,   max:80,   step:2,   label:'深墨R',       group:'文字'},
+  inkDarkG:   {v:14,  min:0,   max:80,   step:2,   label:'深墨G',       group:'文字'},
+  inkDarkB:   {v:10,  min:0,   max:80,   step:2,   label:'深墨B',       group:'文字'},
+  // 水滴
+  shrinkFactor:{v:0.55,min:0,  max:1.0,  step:0.05,label:'缩小程度',     group:'水滴'},
+  rotIntensity:{v:0.7,min:0,   max:2.0,  step:0.1, label:'旋转强度',     group:'水滴'},
+  growthRate: {v:2.4, min:0.5, max:5.0,  step:0.1, label:'成长速率',     group:'水滴'},
+  initRadius: {v:12,  min:5,   max:30,   step:1,   label:'初始半径',     group:'水滴'},
+  completeN:  {v:300, min:50, max:2000, step:50,  label:'创作字数',     group:'水滴'},
+};
+
+function buildTunePanel(){
+  const container=document.getElementById('tune-sliders');
+  container.innerHTML='';
+  const groups={};
+  for(const[k,c]of Object.entries(T)){if(!groups[c.group])groups[c.group]=[];groups[c.group].push(k)}
+  let first=true;
+  for(const[group,keys]of Object.entries(groups)){
+    if(!first){const h=document.createElement('h3');h.textContent=group;container.appendChild(h)}
+    else{document.querySelector('#tune h3').textContent=Object.keys(groups)[0];first=false}
+    for(const k of keys){
+      const c=T[k];
+      const row=document.createElement('div');row.className='tune-row';
+      const lbl=document.createElement('span');lbl.className='tune-label';lbl.textContent=c.label;
+      row.appendChild(lbl);
+
+      if(c.type==='select'){
+        // Dropdown
+        const sel=document.createElement('select');sel.className='tune-select';
+        for(const opt of c.options){
+          const o=document.createElement('option');o.value=opt.v;o.textContent=opt.label;
+          o.style.fontFamily=opt.v;
+          if(opt.v===c.v)o.selected=true;
+          sel.appendChild(o);
+        }
+        sel.addEventListener('change',()=>{c.v=sel.value});
+        row.appendChild(sel);
+      }else{
+        // Slider
+        const valSpan=document.createElement('span');valSpan.className='tune-val';valSpan.textContent=c.v;valSpan.id='tv-'+k;
+        const slider=document.createElement('input');slider.type='range';slider.className='tune-slider';
+        slider.min=c.min;slider.max=c.max;slider.step=c.step;slider.value=c.v;
+        slider.addEventListener('input',()=>{c.v=parseFloat(slider.value);valSpan.textContent=c.v});
+        row.appendChild(slider);row.appendChild(valSpan);
+      }
+      container.appendChild(row);
+    }
+  }
+}
+buildTunePanel();
+
+document.getElementById('tune-btn').addEventListener('click',()=>{document.getElementById('tune').classList.toggle('open')});
+
+/* ═══════ TEXT & LIKED ═══════ */
+const SRC={default:'我不等待任何人给我意义，我是意义的起点。我不依赖结果来证明我的价值，我选择的每一刻都在书写价值。生命不是等待风暴过去，而是学会在雨中舞蹈。每一天都是新的开始，每个选择都有力量。在这个世界上，你就是光，你就是答案。不必追寻远方，此刻就是永恒。',poetry:'床前明月光疑是地上霜举头望明月低头思故乡春眠不觉晓处处闻啼鸟夜来风雨声花落知多少大漠孤烟直长河落日圆白日依山尽黄河入海流欲穷千里目更上一层楼千山鸟飞绝万径人踪灭孤舟蓑笠翁独钓寒江雪明月几时有把酒问青天但愿人长久千里共婵娟问君能有几多愁恰似一江春水向东流天生我材必有用千金散尽还复来长风破浪会有时直挂云帆济沧海落霞与孤鹜齐飞秋水共长天一色海上生明月天涯共此时',philosophy:'未经审视的人生不值得过我思故我在人是生而自由的却无往不在枷锁之中他人即地狱世界是我的表象存在先于本质人不能两次踏入同一条河流知道的越多才知道自己知道的越少吾生也有涯而知也无涯天地不仁以万物为刍狗道可道非常道名可名非常名大音希声大象无形天地与我并生而万物与我为一凡是过往皆为序章万物皆有裂痕那是光照进来的地方',news:'科技正在重新定义我们理解世界的方式人工智能的发展速度超出了所有人的预期气候变化带来的挑战需要全球协作数字化转型正在改变每一个传统行业的面貌太空探索迎来了新的黄金时代量子计算有望在未来十年内实现突破可持续发展不再是口号而是生存必需教育的本质正在被重新思考和定义'};
+const LIKED={'自由发挥':'意义生命自由光明力量选择价值起点梦想远方希望世界时间永恒真心道理深渊桥裂痕沉默','温暖治愈':'温暖光阳心爱花笑生命希望美好甜乐福安春晴天柔善良拥抱信任归宿','孤独寂寞':'孤独寂寞月夜影冷静空默远离别泪雨霜雪暗深秋残沉寂荒原王国','荒诞幽默':'笑怪奇疯狂乱醉梦幻假真荒诞戏游玩闹痴傻阴沟星星自由枷锁','哲理深邃':'道理思知悟生死命天地万物心灵真空无有始终虚实序章裂痕光审视','浪漫唯美':'月花风雪星云梦蝶霞虹露烟柳春秋诗画琴舞歌情清欢故乡醉压'};
+const SEEDS={
+  '自由发挥':['万物皆有裂痕那是光照进来的地方','所有的远方都是从脚下出发的','沉默是语言抵达真相前的最后一站','你是自己的深渊也是自己的桥','每一刻都在废墟上重建意义','存在先于本质而选择先于存在','风暴不会永远持续但你会','从不曾拥有所以从不曾失去','所谓自由就是被别人讨厌的勇气','时间是唯一不撒谎的叙述者'],
+  '温暖治愈':['你不必成为光但可以靠近光','温暖是一种不需要理由的抵达','在所有崩塌之后花依然会开','生命自有温度不必向冬天解释','你值得被一个不讲条件的拥抱','柔软不是软弱而是水穿石的耐心','每一天都在练习值得被爱','所有的伤口最终都会变成入口'],
+  '孤独寂寞':['孤独是灵魂向自己发出的邀请','千山万径人踪灭独与天地共此寂','月光不问归期照亮所有失眠的人','沉默中听见的才是自己真正的声音','一个人的荒原也是一个人的王国','孤独不是被遗忘而是选择记住自己','所有的离别都是为了更深的重逢'],
+  '荒诞幽默':['地狱就是他人而天堂是自欺','自由是一条拴在无限长绳上的狗','人类一思考上帝就发笑','知道得越多就越确信什么都不知道','存在本身就是宇宙讲的最长的笑话','我们都在阴沟里但有人在看星星','认真是荒诞最忠实的同谋'],
+  '哲理深邃':['道可道非常道名可名非常名','天地不仁以万物为刍狗','大音希声大象无形道隐无名','凡是过往皆为序章','吾生也有涯而知也无涯','天地与我并生万物与我为一','未经审视的人生不值得过','知者不言言者不知','人不能两次踏入同一条河流'],
+  '浪漫唯美':['海上生明月天涯共此时','落霞与孤鹜齐飞秋水共长天一色','长风破浪会有时直挂云帆济沧海','醉后不知天在水满船清梦压星河','从前慢一生只够爱一个人','人间有味是清欢','月是故乡明露从今夜白','此身合是诗人未愿风前月下归']
+};
+function localCompose(chars,theme,favs){const pool={};for(const c of chars){if(/[\s，。、！？；：""''（）.,\n]/.test(c))continue;pool[c]=(pool[c]||0)+1}const seeds=[...(SEEDS[theme]||SEEDS['自由发挥']),...SEEDS['自由发挥']];let best=null,bestS=-1;for(const s of seeds){const need={};for(const c of s)if(!/\s/.test(c))need[c]=(need[c]||0)+1;let m=0,t=0;for(const[c,n]of Object.entries(need)){t+=n;m+=Math.min(n,pool[c]||0)}let fb=0;if(favs)for(const f of favs)if(s.includes(f))fb+=2;const sc=m/t+fb*.05;if(sc>bestS){bestS=sc;best=s}}if(bestS<.5){const av=Object.keys(pool);const nice=av.filter(c=>'光明月风花雪水山云天地日星梦心爱人生命自由诗意义远方希望力量道真深空沉默裂痕桥渊'.includes(c));best=(nice.length>=4?nice:av).slice(0,10).join('')}return{sentence:best||'在碎片中寻找意义',reason:'从'+chars.length+'个碎片中拾取'}}
+
+/* File loading */
+let loadedText='';
+const fileInput=document.getElementById('file-input'),dropZone=document.getElementById('drop-zone'),fileInfo=document.getElementById('file-info');
+document.getElementById('inp-src').addEventListener('change',e=>{document.getElementById('file-wrap').style.display=e.target.value==='file'?'block':'none';document.getElementById('custom-wrap').style.display=e.target.value==='custom'?'block':'none'});
+dropZone.addEventListener('click',()=>fileInput.click());dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.style.borderColor='var(--terracotta)'});dropZone.addEventListener('dragleave',()=>{dropZone.style.borderColor=''});dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.style.borderColor='';if(e.dataTransfer.files.length)handleFile(e.dataTransfer.files[0])});fileInput.addEventListener('change',e=>{if(e.target.files.length)handleFile(e.target.files[0])});
+async function handleFile(file){fileInfo.textContent='读取中…';try{const name=file.name.toLowerCase();if(name.endsWith('.epub')){const buf=await file.arrayBuffer();const zip=await JSZip.loadAsync(buf);let all='';for(const[n,f]of Object.entries(zip.files).filter(([n])=>/\.(x?html?|htm)$/i.test(n)).sort((a,b)=>a[0].localeCompare(b[0]))){all+=(new DOMParser().parseFromString(await f.async('string'),'text/html')).body?.textContent||''}loadedText=all.replace(/\s+/g,'').trim()}else{loadedText=(await file.text()).replace(/[#*_`>\-\[\]()!|=+~^]/g,'').replace(/\s+/g,'').trim()}if(loadedText.length<50){fileInfo.textContent='⚠ 内容太少';return}dropZone.classList.add('has-file');dropZone.innerHTML='<div>✓ '+file.name+'</div>';fileInfo.textContent=loadedText.length+'字 · 随机选段'}catch(e){fileInfo.textContent='失败: '+e.message}}
+
+/* ═══════ STATE ═══════ */
+const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');
+let W,H,particles=[],holes=[],consumed=[],stains=[],trail=[],splashes=[];
+let total=0,started=false,ended=false,aiCalled=false,totalHC=0;
+let cfg={theme:'自由发挥',favs:'',apiUrl:'',apiKey:'',model:'',likedSet:new Set()};
+let grainImg=null,FS,LH,CW,COLS,ROWS;
+let colMap=[]; // colMap[col] = array of particles in that column, sorted top→bottom
+let reflowTimer=0;
+
+let dpr=window.devicePixelRatio||1;
+const isMobile=/Android|iPhone|iPad|iPod|HarmonyOS/i.test(navigator.userAgent)||('ontouchstart' in window&&innerWidth<1400);
+function resize(){
+  W=innerWidth;H=innerHeight;
+  dpr=window.devicePixelRatio||1;
+  // Cap DPR on mobile to avoid excessive canvas size
+  if(isMobile&&dpr>2)dpr=2;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  grainImg=null;
+}
+addEventListener('resize',resize);
+// iOS orientation change fires resize late — double-tap it
+screen.orientation?.addEventListener('change',()=>{setTimeout(resize,100);setTimeout(resize,350)});
+resize();
+function grain(){if(grainImg&&grainImg.width===W)return grainImg;const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d'),d=g.createImageData(W,H);for(let i=0;i<d.data.length;i+=4){const v=Math.random()*20;d.data[i]=v;d.data[i+1]=v;d.data[i+2]=v;d.data[i+3]=8}g.putImageData(d,0,0);grainImg=c;return c}
+
+document.querySelectorAll('.chip').forEach(el=>{el.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on')})});
+document.getElementById('api-toggle').addEventListener('click',()=>{document.getElementById('api-body').classList.toggle('open');document.getElementById('api-arrow').classList.toggle('open')});
+document.getElementById('btn-start').addEventListener('click',startGame);
+
+function startGame(){
+  const chip=document.querySelector('.chip.on');cfg.theme=chip?chip.dataset.v:'自由发挥';cfg.favs=document.getElementById('inp-fav').value.trim();
+  cfg.apiUrl=document.getElementById('inp-api-url').value.trim();cfg.apiKey=document.getElementById('inp-api-key').value.trim();cfg.model=document.getElementById('inp-api-model').value.trim();
+  cfg.likedSet=new Set([...(LIKED[cfg.theme]||LIKED['自由发挥'])]);
+  if(cfg.favs)for(const c of cfg.favs.replace(/[,，\s]+/g,''))cfg.likedSet.add(c);
+  const src=document.getElementById('inp-src').value;
+  let text=src==='file'&&loadedText?loadedText.length>2000?loadedText.slice(Math.random()*(loadedText.length-2000)|0,Infinity).slice(0,5000):loadedText:src==='custom'?document.getElementById('inp-custom').value.trim()||SRC.default:SRC[src]||SRC.default;
+  buildP(text);document.getElementById('so').classList.add('hidden');document.getElementById('hud').classList.add('show');document.getElementById('tune-btn').classList.add('show');document.getElementById('hint').style.display='block';started=true;lastT=performance.now();
+}
+
+function buildP(text){
+  particles=[];holes=[];consumed=[];stains=[];trail=[];splashes=[];totalHC=0;colMap=[];reflowTimer=0;
+  FS=T.fontSize.v;LH=FS*1.35;CW=FS*.8;
+  COLS=Math.floor((W-16)/CW);ROWS=Math.floor((H-8)/LH);
+  let t=text.replace(/[\n\r\s]/g,'');const maxP=isMobile?2000:COLS*ROWS;const need=Math.min(COLS*ROWS,maxP);
+  while(t.length<need)t+=t;t=t.slice(0,need);const ch=[...t];
+  const aMin=T.alphaMin.v,aRange=T.alphaMax.v-aMin;
+  for(let c=0;c<COLS;c++)colMap[c]=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const i=r*COLS+c;if(i>=ch.length)break;
+    const x=8+c*CW+CW*.5,y=4+r*LH+LH*.5;
+    const p={c:ch[i],x,y,ox:x,oy:y,ty:y,vx:0,vy:0,a:aMin+Math.random()*aRange,dead:false,ct:0,ang:0,liked:cfg.likedSet.has(ch[i]),col:c};
+    particles.push(p);colMap[c].push(p)}
+  total=particles.length;
+}
+
+/* Reflow: recalculate target y for each column — alive chars settle downward */
+function reflowColumns(){
+  for(let c=0;c<COLS;c++){
+    const col=colMap[c];
+    // Collect alive particles, keep their column order
+    const alive=col.filter(p=>!p.dead);
+    // Stack from bottom: last alive gets bottom slot, etc.
+    const bottomY=4+(ROWS-1)*LH+LH*.5;
+    for(let i=alive.length-1,slot=col.length-1;i>=0;i--,slot--){
+      alive[i].ty=4+slot*LH+LH*.5;
+    }
+  }
+}
+
+canvas.addEventListener('click',e=>{if(!started||ended)return;const r=canvas.getBoundingClientRect();
+  holes.push({x:e.clientX-r.left,y:e.clientY-r.top,mass:1,eaten:0,age:0,ph:Math.random()*6.28,
+    vx:(Math.random()-.5)*T.baseSpeed.v,vy:(Math.random()-.5)*T.baseSpeed.v*.7,
+    seekTimer:0,seekInterval:.35,dt2:0,di:1.5,idle:0,fade:0,alive:true,vR:T.initRadius.v,mf:0,pile:[],excitement:0,
+    // New: wobble, trail, squash
+    wobble:[Math.random()*6.28,Math.random()*6.28,Math.random()*6.28,Math.random()*6.28,Math.random()*6.28],
+    prevX:e.clientX-r.left,prevY:e.clientY-r.top,trailT:0,
+    shrinkScale:1, // for evaporation shrink
+    jellyV:0, jellyD:0 // jelly spring for merge/excitement bounce
+  });
+  totalHC++;document.getElementById('hud-holes').textContent=holes.filter(h=>h.alive).length;document.getElementById('hint').classList.add('gone')});
+canvas.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];canvas.dispatchEvent(new MouseEvent('click',{clientX:t.clientX,clientY:t.clientY}))},{passive:false});
+canvas.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+// Prevent pull-to-refresh and overscroll on mobile
+document.body.addEventListener('touchmove',e=>{if(e.target===canvas||e.target===document.body)e.preventDefault()},{passive:false});
+
+function physics(dt){
+  if(!started||ended)return;
+  const G=T.gravity.v,AR=T.attractR.v,CD=CW*T.consumeR.v,MD=T.mergeD.v,IT=T.idleTime.v,FD=T.fadeDur.v;
+  const SR=T.seekRange.v,BS=T.baseSpeed.v,SB=T.seekBoost.v;
+
+  // Update splashes
+  for(let i=splashes.length-1;i>=0;i--){const s=splashes[i];s.x+=s.vx*dt;s.y+=s.vy*dt;s.vy+=180*dt;s.life-=dt;s.r*=.97;if(s.life<=0)splashes.splice(i,1)}
+  // Update trail
+  for(let i=trail.length-1;i>=0;i--){trail[i].life-=dt;trail[i].r*=.985;if(trail[i].life<=0)trail.splice(i,1)}
+
+  for(const h of holes){if(!h.alive)continue;h.age+=dt;h.mass=Math.min(h.mass+dt*.2,16);h.ph+=dt*1.6;h.mf=Math.max(h.mf-dt*1.5,0);
+    const tR=T.initRadius.v+Math.sqrt(h.eaten)*T.growthRate.v;h.vR+=(tR-h.vR)*dt*2.5;
+
+    // Wobble phases advance
+    for(let i=0;i<h.wobble.length;i++)h.wobble[i]+=dt*(2.5+i*.7);
+
+    // Jelly spring (bouncy feel)
+    h.jellyV+=(-h.jellyD*18-h.jellyV*4)*dt;h.jellyD+=h.jellyV*dt;
+    if(h.excitement>.2)h.jellyV+=dt*1.5; // pulse when excited
+
+    // Evaporation shrink
+    if(h.fade>0){h.shrinkScale=Math.max(1-h.fade*.6,0.2);
+      // Tremble when evaporating
+      for(let i=0;i<h.wobble.length;i++)h.wobble[i]+=dt*(5+h.fade*10);
+    }else{h.shrinkScale+=(1-h.shrinkScale)*dt*3}
+
+    // Trail emission
+    h.trailT+=dt;const spd0=Math.sqrt(h.vx*h.vx+h.vy*h.vy);
+    if(h.trailT>.06&&spd0>15){h.trailT=0;
+      trail.push({x:h.prevX,y:h.prevY,r:h.vR*.25+Math.random()*2,life:.6+Math.random()*.3,a:.12})}
+    h.prevX=h.x;h.prevY=h.y;
+
+    // Pile internal drift
+    for(const ch of h.pile){ch.dx+=Math.sin(h.age*1.2+ch.rot)*dt*2;ch.dy+=Math.cos(h.age*0.9+ch.dx)*dt*1.5;ch.rot+=dt*.15*(Math.sin(h.age+ch.dy))}
+
+    h.seekTimer+=dt;h.excitement=Math.max(h.excitement-dt*.8,0);
+    if(h.seekTimer>.35){h.seekTimer=0;let sx=0,sy=0,sc=0;
+      for(const p of particles){if(p.dead||!p.liked)continue;const dx=p.x-h.x,dy=p.y-h.y,d=Math.sqrt(dx*dx+dy*dy);if(d<SR&&d>5){const w=1/(d*.02+1);sx+=dx/d*w;sy+=dy/d*w;sc++}}
+      if(sc>0){const mg=Math.sqrt(sx*sx+sy*sy);if(mg>0){h.vx=h.vx*.3+(sx/mg)*SB*.7+(Math.random()-.5)*10;h.vy=h.vy*.3+(sy/mg)*SB*.7+(Math.random()-.5)*10;h.excitement=Math.min(h.excitement+.3,1);h.jellyV+=2}}
+      else{h.dt2+=.35;if(h.dt2>h.di){h.dt2=0;h.di=1+Math.random()*2.5;h.vx=(Math.random()-.5)*BS*1.4;h.vy=(Math.random()-.5)*BS*1.4}}}
+    const spd=Math.sqrt(h.vx*h.vx+h.vy*h.vy),maxS=BS+SB;if(spd>maxS){h.vx=h.vx/spd*maxS;h.vy=h.vy/spd*maxS}
+    h.x+=h.vx*dt;h.y+=h.vy*dt;
+    if(h.x<25){h.x=25;h.vx=Math.abs(h.vx)*.8;h.jellyV+=3}if(h.x>W-25){h.x=W-25;h.vx=-Math.abs(h.vx)*.8;h.jellyV+=3}
+    if(h.y<25){h.y=25;h.vy=Math.abs(h.vy)*.8;h.jellyV+=3}if(h.y>H-25){h.y=H-25;h.vy=-Math.abs(h.vy)*.8;h.jellyV+=3}
+    let food=false;for(const p of particles){if(!p.dead&&Math.hypot(p.x-h.x,p.y-h.y)<AR){food=true;break}}
+    if(!food){h.idle+=dt;if(h.idle>IT){h.fade+=dt/FD;if(h.fade>=1)h.alive=false}}else{h.idle=Math.max(h.idle-dt*2,0);h.fade=Math.max(h.fade-dt,0)}}
+
+  // Merge with splashes
+  const al=holes.filter(h=>h.alive);
+  for(let i=0;i<al.length;i++)for(let j=i+1;j<al.length;j++){const a=al[i],b=al[j];if(!a.alive||!b.alive)continue;if(Math.hypot(a.x-b.x,a.y-b.y)<MD){const k=a.eaten>=b.eaten?a:b,g=a.eaten>=b.eaten?b:a;
+    const mx=(k.x+g.x)*.5,my=(k.y+g.y)*.5;
+    const tw=k.eaten+g.eaten+2;k.x=(k.x*(k.eaten+1)+g.x*(g.eaten+1))/tw;k.y=(k.y*(k.eaten+1)+g.y*(g.eaten+1))/tw;
+    k.eaten+=g.eaten;k.mass=Math.min(k.mass+g.mass*.6,24);k.vx=(k.vx+g.vx)*.5;k.vy=(k.vy+g.vy)*.5;k.mf=1;k.idle=0;k.fade=0;k.pile=k.pile.concat(g.pile);k.jellyV+=5;g.alive=false;
+    // Splash particles
+    for(let s=0;s<6;s++){const ang=Math.random()*Math.PI*2,spd=60+Math.random()*80;
+      splashes.push({x:mx,y:my,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd-40,r:2+Math.random()*3,life:.5+Math.random()*.3})}}}
+  document.getElementById('hud-holes').textContent=holes.filter(h=>h.alive).length;
+
+  let changed=false;const swirlS=T.swirlStr.v,retS=T.returnStr.v,fallG=T.fallGrav.v;
+  for(const p of particles){if(p.dead)continue;let fx=0,fy=0,cH=null,cD=1e9;
+    for(const h of holes){if(!h.alive)continue;const dx=h.x-p.x,dy=h.y-p.y,d=Math.sqrt(dx*dx+dy*dy);if(d<cD){cD=d;cH=h}
+      if(d<AR&&d>1){const f=G*h.mass/(d*d),nx=dx/d,ny=dy/d;fx+=nx*f;fy+=ny*f;if(d<AR*.5){fx+=-ny*f*swirlS;fy+=nx*f*swirlS}}}
+    if(cH&&cD<CD){p.dead=true;cH.eaten++;consumed.push(p.c);changed=true;cH.jellyV+=.8;
+      stains.push({x:p.ox,y:p.ty,a:.07+Math.random()*.05,r:CW*.2+Math.random()*CW*.12});
+      const rr=cH.vR*.65;cH.pile.push({c:p.c,dx:(Math.random()-.5)*rr*1.8,dy:(Math.random()-.5)*rr*1.8,rot:(Math.random()-.5)*2.5,sc:.5+Math.random()*.65,al:.35+Math.random()*.4})}
+    else{p.vx=(p.vx+fx*dt)*.955;p.vy=(p.vy+fy*dt)*.955;
+      const dy2=p.ty-p.y;if(dy2>1){p.vy+=fallG*dt}
+      p.vx+=(p.ox-p.x)*dt*retS;p.vy+=(p.ty-p.y)*dt*retS;
+      p.x+=p.vx*dt;p.y+=p.vy*dt;
+      if(cD<AR*.5){p.ct=Math.min(p.ct+dt*2.5,1);p.ang=Math.atan2(cH.y-p.y,cH.x-p.x)}
+      else{p.ct=Math.max(p.ct-dt*.6,0)}}}
+  if(changed){reflowColumns();const pct=consumed.length/total;document.getElementById('hud-pct').textContent=(pct*100|0)+'%';document.getElementById('hud-fill').style.width=(pct*100)+'%';document.getElementById('hud-chars').textContent=consumed.length;if(consumed.length>=T.completeN.v&&!aiCalled){aiCalled=true;compose()}}
+}
+
+async function compose(){const toast=document.getElementById('ai-toast'),useAPI=cfg.apiKey&&cfg.apiUrl;
+  if(useAPI){toast.classList.add('show');document.getElementById('ai-toast-text').textContent='拾字中…';try{const sys=`;; 角色: 废墟拾字人
+;; 风格: ("鲁迅" "Oscar Wilde" "庄子" "维特根斯坦")
+;; 擅长: 一针见血
+;; 表达: (隐喻 (压缩到极致 (哲理含义 抓住本质)))
+
+(defun 拾字成诗 (碎片)
+  "从被吞噬的文字碎片中，拾取散落的意义"
+  (let* ((本质 (还原本质 (抛开表象 碎片)))
+         (洞见 (一句话表达 (隐喻 (一针见血 本质))))
+         (诗句 (压缩凝练 (文学性 (哲理深度 洞见)))))
+    ;; 像庄子写寓言：用最少的字抵达最深的真
+    ;; 像鲁迅写杂文：句句见骨，字字见血
+    ;; 像维特根斯坦：不可说的必须沉默，可说的必须精准
+    诗句))
+
+规则：
+1. 只能使用碎片中出现的字符（每字最多用其出现次数）
+2. 情绪基调：${cfg.theme}
+3. ${cfg.favs?'种子意象：'+cfg.favs+'，围绕它们展开':'自由选择最有张力的字'}
+4. 长度：8-25字。宁短勿长，一字不多余
+5. 追求：压缩到极致的诗意。不要口号，不要鸡汤。要洞见，要隐喻，要那种读完愣三秒的力量
+6. 好的例子：
+   - "万物皆有裂痕，那是光照进来的地方"
+   - "你是自己的深渊，也是自己的桥"
+   - "沉默是语言抵达真相前的最后一站"
+   - "所有的远方都是从脚下出发的"
+7. 坏的例子（绝对不要写这种）：
+   - "让我们一起加油吧"
+   - "生活充满了美好和希望"
+   - "相信自己你是最棒的"
+
+严格返回JSON（无markdown无代码块）：
+{"sentence":"你的诗句","reason":"一句话：为什么选这些字，它们之间有什么隐藏的张力"}`;const resp=await fetch(cfg.apiUrl,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},body:JSON.stringify({model:cfg.model||'moonshot-v1-32k',messages:[{role:'system',content:sys},{role:'user',content:'以下是黑洞吞噬到的文字碎片（共'+consumed.length+'字）：\n\n'+consumed.join('')+'\n\n请从中拾字成诗。记住：压缩到极致，一字不多余。'}],temperature:.85,max_tokens:500})});const data=await resp.json();const raw=data.choices?.[0]?.message?.content||'';const cl=raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();let r;try{r=JSON.parse(cl)}catch{r={sentence:cl.slice(0,40),reason:'自由创作'}}toast.classList.remove('show');showR(r);return}catch(e){toast.classList.remove('show')}}
+  toast.classList.add('show');document.getElementById('ai-toast-text').textContent='废墟拾字人正在凝视碎片…';await new Promise(r=>setTimeout(r,800));const fA=cfg.favs?cfg.favs.replace(/[,，\s]+/g,' ').split(' ').filter(Boolean):[];const r=localCompose(consumed,cfg.theme,fA);toast.classList.remove('show');showR(r)}
+function showR(d){ended=true;setTimeout(()=>{document.getElementById('rv-sent').textContent=d.sentence||'…';document.getElementById('rv-reason').textContent=d.reason?'— '+d.reason:'';document.getElementById('rv-total').textContent=total;document.getElementById('rv-eaten').textContent=consumed.length;document.getElementById('rv-holes').textContent=totalHC;document.getElementById('reveal').classList.add('show')},600)}
+
+function render(){
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#F5F0E8';ctx.fillRect(0,0,W,H);
+  const wg=ctx.createRadialGradient(W*.38,H*.32,0,W*.5,H*.5,Math.max(W,H)*.62);wg.addColorStop(0,'rgba(255,248,235,.5)');wg.addColorStop(.55,'rgba(245,240,232,.12)');wg.addColorStop(1,'rgba(237,230,218,.25)');ctx.fillStyle=wg;ctx.fillRect(0,0,W,H);ctx.drawImage(grain(),0,0);
+  if(!started)return;
+  for(const s of stains){ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(62,52,42,${s.a})`;ctx.fill()}
+  const curFS=T.fontSize.v,curFW=T.fontWeight.v,curFF='"'+T.fontFamily.v+'","Georgia","SimSun",serif',dR=T.inkDarkR.v,dG=T.inkDarkG.v,dB=T.inkDarkB.v,shrk=T.shrinkFactor.v,rotI=T.rotIntensity.v;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  for(const p of particles){if(p.dead)continue;ctx.save();ctx.translate(p.x,p.y);
+    if(p.ct>0){ctx.rotate(p.ang*rotI);ctx.scale(1-p.ct*shrk,1-p.ct*shrk)}
+    let minD=1e9;for(const h of holes){if(!h.alive)continue;const d=Math.hypot(h.x-p.x,h.y-p.y);if(d<minD)minD=d}
+    let a=p.a;const ir=Math.floor(dR+(58-dR)*(1-a)),ig=Math.floor(dG+(50-dG)*(1-a)),ib=Math.floor(dB+(42-dB)*(1-a));
+    if(minD<120){const t=1-minD/120;a=Math.min(p.a+t*.3,1);
+      ctx.fillStyle=p.liked?'rgba('+Math.min(ir+130,220)+','+Math.min(ig+55,125)+','+Math.min(ib+35,80)+','+a+')':'rgba('+ir+','+ig+','+ib+','+a+')';
+    }else{ctx.fillStyle=p.liked?'rgba('+Math.min(ir+110,200)+','+Math.min(ig+50,120)+','+Math.min(ib+30,75)+','+a+')':'rgba('+ir+','+ig+','+ib+','+a+')'}
+    ctx.font=curFW+' '+curFS+'px '+curFF;ctx.fillText(p.c,0,0);ctx.restore()}
+  // Trail droplets
+  for(const t of trail){ctx.beginPath();ctx.arc(t.x,t.y,t.r,0,Math.PI*2);ctx.fillStyle='rgba(140,130,115,'+(t.life*.2)+')';ctx.fill();
+    ctx.beginPath();ctx.arc(t.x-t.r*.2,t.y-t.r*.25,t.r*.35,0,Math.PI*2);ctx.fillStyle='rgba(255,255,250,'+(t.life*.2)+')';ctx.fill()}
+
+  // Splash particles
+  for(const s of splashes){ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle='rgba(160,150,135,'+(s.life*.5)+')';ctx.fill();
+    ctx.beginPath();ctx.arc(s.x-s.r*.2,s.y-s.r*.3,s.r*.3,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,250,'+(s.life*.3)+')';ctx.fill()}
+
+  // Water drops — Ink Bead
+  for(const h of holes){if(!h.alive)continue;
+    const op=1-h.fade;
+    const baseR=h.vR*h.shrinkScale*(1+h.jellyD*.08);
+    const spd=Math.sqrt(h.vx*h.vx+h.vy*h.vy);
+    const moveAng=Math.atan2(h.vy,h.vx);
+    // Squash & stretch factor based on speed
+    const stretch=1+Math.min(spd*.003,.22);
+    const squash=1/Math.sqrt(stretch);
+
+    ctx.save();ctx.globalAlpha=op;ctx.translate(h.x,h.y);ctx.rotate(moveAng);
+    // Now we work in local coords where movement direction = +x
+
+    // Helper: draw wobbly circle path
+    function wobblePath(R,intensity){
+      ctx.beginPath();
+      const n=48;
+      for(let i=0;i<=n;i++){
+        const a=i/n*Math.PI*2;
+        let wr=0;for(let k=0;k<h.wobble.length;k++){wr+=Math.sin(a*(k+2)+h.wobble[k])*(intensity/(k+1))}
+        const rr=R+wr;
+        const px=Math.cos(a)*rr*stretch;
+        const py=Math.sin(a)*rr*squash;
+        i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+      }ctx.closePath();
+    }
+
+    // 1. Contact shadow (offset toward +y in world, so rotate back)
+    ctx.save();ctx.rotate(-moveAng);
+    const shR=baseR+5;
+    const csG=ctx.createRadialGradient(3,baseR*.2,baseR*.6,3,baseR*.2,shR);
+    csG.addColorStop(0,'rgba(50,42,35,0)');csG.addColorStop(.55,'rgba(50,42,35,.08)');csG.addColorStop(.8,'rgba(50,42,35,.13)');csG.addColorStop(1,'rgba(50,42,35,0)');
+    ctx.beginPath();ctx.ellipse(3,baseR*.2,shR*1.1,shR*.7,0,0,Math.PI*2);ctx.fillStyle=csG;ctx.fill();
+    ctx.restore();
+
+    // 2. Caustic brightening
+    ctx.save();ctx.rotate(-moveAng);
+    const cauG=ctx.createRadialGradient(0,0,0,0,0,baseR*.6);cauG.addColorStop(0,'rgba(255,250,240,.1)');cauG.addColorStop(1,'rgba(255,250,240,0)');
+    ctx.beginPath();ctx.arc(0,0,baseR*.6,0,Math.PI*2);ctx.fillStyle=cauG;ctx.fill();
+    ctx.restore();
+
+    // 3. Drop body — wobbly outline with edge darkening
+    const bodyG=ctx.createRadialGradient(-baseR*.1*squash,-baseR*.1*squash,0,0,0,baseR);
+    bodyG.addColorStop(0,'rgba(250,248,245,.06)');bodyG.addColorStop(.55,'rgba(245,240,232,.04)');
+    bodyG.addColorStop(.85,'rgba(190,180,165,.09)');bodyG.addColorStop(1,'rgba(150,140,125,.2)');
+    wobblePath(baseR,1.5);ctx.fillStyle=bodyG;ctx.fill();
+
+    // 4. Rainbow iridescent rim (with fallback for older browsers)
+    if(ctx.createConicGradient){
+      ctx.save();
+      const iriG=ctx.createConicGradient(h.age*.3,0,0);
+      iriG.addColorStop(0,'rgba(255,180,180,.12)');iriG.addColorStop(.17,'rgba(255,220,150,.10)');
+      iriG.addColorStop(.33,'rgba(200,255,200,.08)');iriG.addColorStop(.5,'rgba(170,200,255,.10)');
+      iriG.addColorStop(.67,'rgba(220,180,255,.08)');iriG.addColorStop(.83,'rgba(255,180,200,.10)');
+      iriG.addColorStop(1,'rgba(255,180,180,.12)');
+      wobblePath(baseR,1.5);ctx.strokeStyle=iriG;ctx.lineWidth=1.5;ctx.stroke();
+      ctx.restore();
+    }
+
+    // 5. Excitement glow
+    if(h.excitement>.05){
+      ctx.save();ctx.rotate(-moveAng);
+      const exG=ctx.createRadialGradient(0,0,baseR*.4,0,0,baseR+8);
+      exG.addColorStop(0,'rgba(196,131,106,'+(.1*h.excitement)+')');exG.addColorStop(1,'rgba(196,131,106,0)');
+      ctx.beginPath();ctx.arc(0,0,baseR+8,0,Math.PI*2);ctx.fillStyle=exG;ctx.fill();
+      ctx.restore();
+    }
+
+    // 6. Merge flash
+    if(h.mf>0){ctx.save();ctx.rotate(-moveAng);
+      ctx.beginPath();ctx.arc(0,0,baseR+h.mf*22,0,Math.PI*2);ctx.fillStyle='rgba(230,225,215,'+(.18*h.mf)+')';ctx.fill();
+      ctx.restore()}
+
+    // 7. Internal pile of jumbled chars (clipped to wobbly shape)
+    ctx.save();
+    wobblePath(baseR-1,1.5);ctx.clip();
+    ctx.rotate(-moveAng); // render chars upright
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    const maxS=Math.min(h.pile.length,80),bR=T.initRadius.v+Math.sqrt(Math.max(h.eaten-1,0))*T.growthRate.v;
+    const sf=baseR/bR;
+    // Top-to-bottom gradient overlay via char alpha
+    for(let i=h.pile.length-maxS;i<h.pile.length;i++){
+      const ch=h.pile[i];
+      const cx=ch.dx*sf,cy=ch.dy*sf;
+      const dfc=Math.sqrt(cx*cx+cy*cy);
+      const ef=1-Math.min(dfc/baseR,.95);
+      // Arc distortion: push chars outward near edge (fisheye)
+      const distort=1+dfc/(baseR*3);
+      const ax=cx*distort,ay=cy*distort;
+      // Vertical gradient: upper=brighter, lower=darker
+      const vertFade=1-(ay/baseR*.3+.3);
+      const fs2=T.fontSize.v*ch.sc*(.6+ef*.6);
+      ctx.save();ctx.translate(ax,ay);ctx.rotate(ch.rot);
+      ctx.font='600 '+fs2+'px '+curFF;
+      ctx.fillStyle='rgba(30,25,18,'+(ch.al*(.4+ef*.4)*Math.max(vertFade,.3))+')';
+      ctx.fillText(ch.c,0,0);ctx.restore();
+    }
+    ctx.restore(); // un-clip
+
+    // 8. Glass edge — dark contact line + inner bright line
+    wobblePath(baseR,1.5);ctx.strokeStyle='rgba(110,100,88,.22)';ctx.lineWidth=1.4;ctx.stroke();
+    wobblePath(baseR-.8,1.5);ctx.strokeStyle='rgba(255,252,248,.08)';ctx.lineWidth=.6;ctx.stroke();
+
+    // 9. Highlights (rendered in world space for proper light direction)
+    ctx.save();ctx.rotate(-moveAng);
+    // Clip to drop shape
+    ctx.save();ctx.rotate(moveAng);wobblePath(baseR,1.5);ctx.clip();ctx.rotate(-moveAng);
+
+    // Large soft highlight (upper-left)
+    const hlOx=-baseR*.28,hlOy=-baseR*.32;
+    const hlG=ctx.createRadialGradient(hlOx,hlOy,0,hlOx,hlOy,baseR*.55);
+    hlG.addColorStop(0,'rgba(255,255,252,.32)');hlG.addColorStop(.35,'rgba(255,255,250,.10)');hlG.addColorStop(1,'rgba(255,255,250,0)');
+    ctx.beginPath();ctx.ellipse(hlOx,hlOy,baseR*.44,baseR*.28,-.3,0,Math.PI*2);ctx.fillStyle=hlG;ctx.fill();
+
+    // Sharp specular dot (slightly offset from large hl)
+    const dotX=-baseR*.2,dotY=-baseR*.26;
+    const dotG=ctx.createRadialGradient(dotX,dotY,0,dotX,dotY,baseR*.1);
+    dotG.addColorStop(0,'rgba(255,255,255,.55)');dotG.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.beginPath();ctx.arc(dotX,dotY,baseR*.1,0,Math.PI*2);ctx.fillStyle=dotG;ctx.fill();
+
+    // Bottom warm reflection from paper
+    const brY=baseR*.38;
+    const brG=ctx.createRadialGradient(baseR*.08,brY,0,baseR*.08,brY,baseR*.28);
+    brG.addColorStop(0,'rgba(248,240,228,.07)');brG.addColorStop(1,'rgba(248,240,228,0)');
+    ctx.beginPath();ctx.ellipse(baseR*.08,brY,baseR*.26,baseR*.1,.2,0,Math.PI*2);ctx.fillStyle=brG;ctx.fill();
+
+    ctx.restore();ctx.restore();
+
+    ctx.restore(); // main transform
+
+    // 10. Evaporation warning ring
+    if(h.idle>2&&h.fade<.1){const w=Math.sin(h.age*5)*.3+.7;ctx.beginPath();ctx.arc(h.x,h.y,baseR+2,0,Math.PI*2);ctx.strokeStyle='rgba(180,170,155,'+(.05*w)+')';ctx.lineWidth=.4;ctx.stroke()}
+  }
+  holes=holes.filter(h=>h.alive);
+}
+
+let lastT=performance.now();
+(function loop(ts){const dt=Math.min((ts-lastT)/1000,.05);lastT=ts;physics(dt);render();requestAnimationFrame(loop)})(lastT);
+</script>
+</body>
+</html>
