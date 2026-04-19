@@ -113,9 +113,6 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC','Georgia'
 <span class="chip" data-v="羞涩"><span class="ic">朵</span>羞涩</span>
 </div></div>
 
-<div class="field"><span class="fl">当下的偏爱 <span class="opt">（命签会主动寻找这些字）</span></span>
-<input type="text" id="inp-fav" autocomplete="off" placeholder="随心写几个字…  光  远方  自由"></div>
-
 <div class="field"><span class="fl">当下想要选择的文本</span>
 <select id="inp-src">
 <option value="default">默认 · 自我肯定</option>
@@ -135,6 +132,11 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC','Georgia'
 <input type="file" id="file-input" accept=".md,.epub,.txt,.text,.markdown"></div>
 <div class="file-info" id="file-info"></div></div>
 <div class="field" id="custom-wrap" style="display:none"><span class="fl">粘贴文字</span><textarea id="inp-custom" placeholder="粘贴…"></textarea></div>
+
+<div class="field" id="fav-wrap" style="display:none">
+<span class="fl">当下的偏爱 <span class="opt">（选至多三个字，命签会主动寻找它们）</span></span>
+<div class="chips" id="fav-chips"></div>
+</div>
 
 <!-- API hidden: triple-tap the deco line to reveal -->
 <div class="cbody" id="api-body">
@@ -295,9 +297,22 @@ function localCompose(chars,theme,favs){const pool={};for(const c of chars){if(/
 /* File loading */
 let loadedText='';
 const fileInput=document.getElementById('file-input'),dropZone=document.getElementById('drop-zone'),fileInfo=document.getElementById('file-info');
-document.getElementById('inp-src').addEventListener('change',e=>{document.getElementById('file-wrap').style.display=e.target.value==='file'?'block':'none';document.getElementById('custom-wrap').style.display=e.target.value==='custom'?'block':'none'});
+document.getElementById('inp-src').addEventListener('change',e=>{document.getElementById('file-wrap').style.display=e.target.value==='file'?'block':'none';document.getElementById('custom-wrap').style.display=e.target.value==='custom'?'block':'none';if(e.target.value!=='file'&&e.target.value!=='custom')generateFavChips(e.target.value);else document.getElementById('fav-wrap').style.display='none'});
+document.getElementById('inp-custom').addEventListener('input',e=>{if(e.target.value.trim().length>20)generateFavChipsRaw(e.target.value.trim())});
+
+function generateFavChipsRaw(raw){
+  const freq={};for(const c of raw){if(/[\s，。、！？；：""''（）.,\n0-9a-zA-Z]/.test(c))continue;freq[c]=(freq[c]||0)+1}
+  const nice='光明月风花雪水山云天地日星梦心爱人生命自由远方希望力量道真深空沉默桥渊鸟飞影秋春夜雨酒剑归愁魂泪故江河湖海石松竹梅兰清静虚无玄妙灵仙鹤鹏龙凤琴书画棋烟霞露霜雷电火冰';
+  const entries=Object.entries(freq).filter(([c])=>c.trim()).sort((a,b)=>{const ai=nice.includes(a[0])?1:0;const bi=nice.includes(b[0])?1:0;return bi-ai||(b[1]-a[1])});
+  const picked=new Set();const result=[];
+  for(const[c] of entries){if(picked.has(c))continue;picked.add(c);result.push(c);if(result.length>=10)break}
+  const wrap=document.getElementById('fav-wrap');const box=document.getElementById('fav-chips');
+  box.innerHTML='';result.forEach(c=>{const s=document.createElement('span');s.className='chip fav-chip';s.textContent=c;s.addEventListener('click',()=>{const on=box.querySelectorAll('.fav-chip.on');if(s.classList.contains('on')){s.classList.remove('on')}else if(on.length<3){s.classList.add('on')}});box.appendChild(s)});
+  wrap.style.display=result.length?'block':'none';
+}
+function generateFavChips(srcVal){generateFavChipsRaw(SRC_EXTRA[srcVal]||SRC[srcVal]||SRC.default)}
 dropZone.addEventListener('click',()=>fileInput.click());dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.style.borderColor='var(--terracotta)'});dropZone.addEventListener('dragleave',()=>{dropZone.style.borderColor=''});dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.style.borderColor='';if(e.dataTransfer.files.length)handleFile(e.dataTransfer.files[0])});fileInput.addEventListener('change',e=>{if(e.target.files.length)handleFile(e.target.files[0])});
-async function handleFile(file){fileInfo.textContent='读取中…';try{const name=file.name.toLowerCase();if(name.endsWith('.epub')){const buf=await file.arrayBuffer();const zip=await JSZip.loadAsync(buf);let all='';for(const[n,f]of Object.entries(zip.files).filter(([n])=>/\.(x?html?|htm)$/i.test(n)).sort((a,b)=>a[0].localeCompare(b[0]))){all+=(new DOMParser().parseFromString(await f.async('string'),'text/html')).body?.textContent||''}loadedText=all.replace(/\s+/g,'').trim()}else{loadedText=(await file.text()).replace(/[#*_`>\-\[\]()!|=+~^]/g,'').replace(/\s+/g,'').trim()}if(loadedText.length<50){fileInfo.textContent='⚠ 内容太少';return}dropZone.classList.add('has-file');dropZone.innerHTML='<div>✓ '+file.name+'</div>';fileInfo.textContent=loadedText.length+'字 · 随机选段'}catch(e){fileInfo.textContent='失败: '+e.message}}
+async function handleFile(file){fileInfo.textContent='读取中…';try{const name=file.name.toLowerCase();if(name.endsWith('.epub')){const buf=await file.arrayBuffer();const zip=await JSZip.loadAsync(buf);let all='';for(const[n,f]of Object.entries(zip.files).filter(([n])=>/\.(x?html?|htm)$/i.test(n)).sort((a,b)=>a[0].localeCompare(b[0]))){all+=(new DOMParser().parseFromString(await f.async('string'),'text/html')).body?.textContent||''}loadedText=all.replace(/\s+/g,'').trim()}else{loadedText=(await file.text()).replace(/[#*_`>\-\[\]()!|=+~^]/g,'').replace(/\s+/g,'').trim()}if(loadedText.length<50){fileInfo.textContent='⚠ 内容太少';return}dropZone.classList.add('has-file');dropZone.innerHTML='<div>✓ '+file.name+'</div>';fileInfo.textContent=loadedText.length+'字 · 随机选段';generateFavChipsRaw(loadedText)}catch(e){fileInfo.textContent='失败: '+e.message}}
 
 /* ═══════ STATE ═══════ */
 const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');
@@ -332,7 +347,7 @@ window.addEventListener('orientationchange',()=>{setTimeout(resize,150);setTimeo
 resize();
 function grain(){if(grainImg&&grainImg.width===W)return grainImg;const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d'),d=g.createImageData(W,H);for(let i=0;i<d.data.length;i+=4){const v=Math.random()*20;d.data[i]=v;d.data[i+1]=v;d.data[i+2]=v;d.data[i+3]=8}g.putImageData(d,0,0);grainImg=c;return c}
 
-document.querySelectorAll('.chip').forEach(el=>{el.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on')})});
+document.querySelectorAll('.chip[data-v]').forEach(el=>{el.addEventListener('click',()=>{document.querySelectorAll('.chip[data-v]').forEach(c=>c.classList.remove('on'));el.classList.add('on')})});
 // Hidden API toggle: triple-tap the deco line
 let decoTaps=0,decoTimer=0;
 document.querySelector('.deco')?.addEventListener('click',()=>{decoTaps++;clearTimeout(decoTimer);decoTimer=setTimeout(()=>{decoTaps=0},600);if(decoTaps>=3){decoTaps=0;document.getElementById('api-body').classList.toggle('open')}});
@@ -348,9 +363,10 @@ function getShichen(){
 const sc=getShichen();
 document.getElementById('shichen-display').innerHTML='此刻 '+sc.now+'<br>为你卜算 → <b>'+sc.next+'</b>';
 document.getElementById('btn-start').addEventListener('click',startGame);
+generateFavChips(document.getElementById('inp-src').value);
 
 function startGame(){
-  const chip=document.querySelector('.chip.on');cfg.theme=chip?chip.dataset.v:'自由发挥';cfg.favs=document.getElementById('inp-fav').value.trim();
+  const chip=document.querySelector('.chip[data-v].on');cfg.theme=chip?chip.dataset.v:'自由发挥';cfg.favs=[...document.querySelectorAll('.fav-chip.on')].map(c=>c.textContent).join('');
   cfg.apiUrl=document.getElementById('inp-api-url').value.trim();cfg.apiKey=document.getElementById('inp-api-key').value.trim();cfg.model=document.getElementById('inp-api-model').value.trim();
   cfg.likedSet=new Set([...(LIKED[cfg.theme]||LIKED['迷茫'])]);
   if(cfg.favs)for(const c of cfg.favs.replace(/[,，\s]+/g,''))cfg.likedSet.add(c);
