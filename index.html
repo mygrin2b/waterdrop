@@ -61,6 +61,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC','Georgia'
 .rv-sep{width:36px;height:1px;background:var(--sand);margin:32px 0;opacity:.45;animation:fadeU .8s ease 1.05s both}
 .rv-stats{display:flex;gap:44px;animation:fadeU 1s ease 1.15s both}.rv-stat{text-align:center}.rv-num{font-size:24px;color:var(--ink);font-weight:400;font-family:'Cormorant Garamond',serif}.rv-lbl{font-size:10px;color:var(--ink-ghost);margin-top:4px;letter-spacing:1.5px}
 .btn-again{margin-top:36px;padding:10px 34px;background:transparent;border:1px solid var(--sand-light);border-radius:9px;color:var(--ink-light);font-family:inherit;font-size:12px;cursor:pointer;transition:all .3s;letter-spacing:3px;animation:fadeU 1s ease 1.35s both}.btn-again:hover{border-color:var(--sand);color:var(--ink)}
+.rv-verdict{margin-top:22px;animation:fadeU 1s ease 1.25s both;text-align:center}.rv-verdict-label{font-size:11px;color:var(--ink-ghost);letter-spacing:3px;margin-bottom:8px}.rv-verdict-val{font-family:'ZCOOL XiaoWei',serif;font-size:32px;color:var(--terracotta);letter-spacing:12px;font-weight:400}
 
 /* ═══ TUNING PANEL ═══ */
 #tune-btn{position:fixed;top:12px;right:16px;z-index:20;width:32px;height:32px;border-radius:8px;background:rgba(250,247,242,.8);border:1px solid var(--sand-light);cursor:pointer;display:none;align-items:center;justify-content:center;font-size:16px;color:var(--ink-faint);transition:all .2s;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
@@ -176,6 +177,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC','Georgia'
 <div class="rv-stat"><div class="rv-num" id="rv-eaten">0</div><div class="rv-lbl">已拾取</div></div>
 <div class="rv-stat"><div class="rv-num" id="rv-holes">0</div><div class="rv-lbl">命签数</div></div>
 </div>
+<div class="rv-verdict" id="rv-verdict"></div>
 <button class="btn-again" onclick="location.reload()">再问一卦</button>
 </div>
 
@@ -537,7 +539,14 @@ async function compose(){const toast=document.getElementById('ai-toast'),useAPI=
 严格返回JSON（无markdown无代码块）：
 {"sentence":"签文","reason":"一句话解签：这句话想告诉问卦者什么"}`;const resp=await fetch(cfg.apiUrl,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},body:JSON.stringify({model:cfg.model||'moonshot-v1-32k',messages:[{role:'system',content:sys},{role:'user',content:'问卦者当下情绪：'+cfg.theme+'\n\n以下是命签拾取到的文字碎片（共'+consumed.length+'字）：\n'+consumed.join('')+'\n\n请卜算下一个时辰的签文。'}],temperature:.85,max_tokens:500})});const data=await resp.json();const raw=data.choices?.[0]?.message?.content||'';const cl=raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').replace(/[“”‘’]/g,'"').trim();let r;try{r=JSON.parse(cl)}catch{const sm=cl.match(/[""]sentence[""]?\s*[:：]\s*[""]([^""]+)[""]/);const rm=cl.match(/[""]reason[""]?\s*[:：]\s*[""]([^""]+)[""]/);r={sentence:sm?sm[1]:cl.replace(/[{}""":：,\s]/g,'').slice(0,40),reason:rm?rm[1]:''}}toast.classList.remove('show');showR(r);return}catch(e){toast.classList.remove('show')}}
   toast.classList.add('show');document.getElementById('ai-toast-text').textContent='时辰正在凝聚…';await new Promise(r=>setTimeout(r,800));const fA=cfg.favs?cfg.favs.replace(/[,，\s]+/g,' ').split(' ').filter(Boolean):[];const r=localCompose(consumed,cfg.theme,fA);toast.classList.remove('show');showR(r)}
-function showR(d){ended=true;setTimeout(()=>{document.getElementById('rv-sent').textContent=d.sentence||'…';document.getElementById('rv-reason').textContent=d.reason?'— '+d.reason:'';document.getElementById('rv-total').textContent=total;document.getElementById('rv-eaten').textContent=consumed.length;document.getElementById('rv-holes').textContent=totalHC;document.getElementById('reveal').classList.add('show')},600)}
+function showR(d){ended=true;setTimeout(()=>{document.getElementById('rv-sent').textContent=d.sentence||'…';document.getElementById('rv-reason').textContent=d.reason?'— '+d.reason:'';document.getElementById('rv-total').textContent=total;document.getElementById('rv-eaten').textContent=consumed.length;document.getElementById('rv-holes').textContent=totalHC;
+  const ranks=['上上','上中','上下','中上','中中','中下','下上','下中','下下'];
+  const s=d.sentence||'';let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;
+  h=(h+consumed.length*7+totalHC*13+total*3+(new Date().getMinutes()))>>>0;
+  const idx=h%9;
+  const vBox=document.getElementById('rv-verdict');
+  vBox.innerHTML='<div class="rv-verdict-label">判 词</div><div class="rv-verdict-val">'+ranks[idx]+'</div>';
+  document.getElementById('reveal').classList.add('show')},600)}
 
 function render(){
   ctx.clearRect(0,0,W,H);ctx.fillStyle='#F5F0E8';ctx.fillRect(0,0,W,H);
