@@ -182,7 +182,8 @@ const T={
   returnStr:  {v:0.6, min:0,   max:3.0,  step:0.1, label:'回弹力度',     group:'运动'},
   fallGrav:   {v:120, min:0,   max:500,  step:10,  label:'坠落重力',     group:'运动'},
   // 文字
-  fontSize:   {v:24,  min:10,  max:28,   step:1,   label:'字号',         group:'文字'},
+  fontSize:   {v:15,  min:10,  max:28,   step:1,   label:'字号',         group:'文字'},
+  charTotal:  {v:0,   min:0,  max:8000, step:100, label:'字数(0=自动)',  group:'文字'},
   fontFamily: {v:'Long Cang', type:'select', label:'字体', group:'文字',
     options:[
       {v:'Noto Serif SC',   label:'思源宋体'},
@@ -274,7 +275,7 @@ let loadedText='';
 const fileInput=document.getElementById('file-input'),dropZone=document.getElementById('drop-zone'),fileInfo=document.getElementById('file-info');
 document.getElementById('inp-src').addEventListener('change',e=>{document.getElementById('file-wrap').style.display=e.target.value==='file'?'block':'none';document.getElementById('custom-wrap').style.display=e.target.value==='custom'?'block':'none'});
 dropZone.addEventListener('click',()=>fileInput.click());dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.style.borderColor='var(--terracotta)'});dropZone.addEventListener('dragleave',()=>{dropZone.style.borderColor=''});dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.style.borderColor='';if(e.dataTransfer.files.length)handleFile(e.dataTransfer.files[0])});fileInput.addEventListener('change',e=>{if(e.target.files.length)handleFile(e.target.files[0])});
-async function handleFile(file){fileInfo.textContent='读取中…';try{const name=file.name.toLowerCase();if(name.endsWith('.epub')){const buf=await file.arrayBuffer();const zip=await JSZip.loadAsync(buf);let all='';for(const[n,f]of Object.entries(zip.files).filter(([n])=>/\.(x?html?|htm)$/i.test(n)).sort((a,b)=>a[0].localeCompare(b[0]))){all+=(new DOMParser().parseFromString(await f.async('string'),'text/html')).body?.textContent||''}loadedText=all.replace(/\s+/g,'').trim()}else{loadedText=(await file.text()).replace(/[#*_`>\-\[\]()!|=+~^]/g,'').replace(/\s+/g,'').trim()}if(loadedText.length<50){fileInfo.textContent='⚠ 内容太少';return}dropZone.classList.add('has-file');dropZone.innerHTML='<div>✓ '+file.name+'</div>';fileInfo.textContent=loadedText.length+'字 · 随机选段'}catch(e){fileInfo.textContent='失败: '+e.message}}
+async function handleFile(file){fileInfo.textContent='读取中…';try{const name=file.name.toLowerCase();if(name.endsWith('.epub')){const buf=await file.arrayBuffer();const zip=await JSZip.loadAsync(buf);let all='';for(const[n,f]of Object.entries(zip.files).filter(([n])=>/\.(x?html?|htm)$/i.test(n)).sort((a,b)=>a[0].localeCompare(b[0]))){all+=(new DOMParser().parseFromString(await f.async('string'),'text/html')).body?f.async('string').body.textContent:''}loadedText=all.replace(/\s+/g,'').trim()}else{loadedText=(await file.text()).replace(/[#*_`>\-\[\]()!|=+~^]/g,'').replace(/\s+/g,'').trim()}if(loadedText.length<50){fileInfo.textContent='⚠ 内容太少';return}dropZone.classList.add('has-file');dropZone.innerHTML='<div>✓ '+file.name+'</div>';fileInfo.textContent=loadedText.length+'字 · 随机选段'}catch(e){fileInfo.textContent='失败: '+e.message}}
 
 /* ═══════ STATE ═══════ */
 const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');
@@ -304,7 +305,7 @@ function resize(){
 }
 addEventListener('resize',resize);
 // iOS orientation change fires resize late — double-tap it
-try{screen.orientation?.addEventListener('change',()=>{setTimeout(resize,100);setTimeout(resize,350)})}catch(e){}
+try{if(screen.orientation&&screen.orientation.addEventListener){screen.orientation.addEventListener('change',function(){setTimeout(resize,100);setTimeout(resize,350)})}}catch(e){}
 window.addEventListener('orientationchange',()=>{setTimeout(resize,150);setTimeout(resize,400)});
 resize();
 function grain(){if(grainImg&&grainImg.width===W)return grainImg;const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d'),d=g.createImageData(W,H);for(let i=0;i<d.data.length;i+=4){const v=Math.random()*20;d.data[i]=v;d.data[i+1]=v;d.data[i+2]=v;d.data[i+3]=8}g.putImageData(d,0,0);grainImg=c;return c}
@@ -312,7 +313,7 @@ function grain(){if(grainImg&&grainImg.width===W)return grainImg;const c=documen
 document.querySelectorAll('.chip').forEach(el=>{el.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on')})});
 // Hidden API toggle: triple-tap the deco line
 let decoTaps=0,decoTimer=0;
-document.querySelector('.deco')?.addEventListener('click',()=>{decoTaps++;clearTimeout(decoTimer);decoTimer=setTimeout(()=>{decoTaps=0},600);if(decoTaps>=3){decoTaps=0;document.getElementById('api-body').classList.toggle('open')}});
+(function(){var d=document.querySelector('.deco');if(d)d.addEventListener('click',function(){decoTaps++;clearTimeout(decoTimer);decoTimer=setTimeout(()=>{decoTaps=0},600);if(decoTaps>=3){decoTaps=0;document.getElementById('api-body').classList.toggle('open')}})})();
 
 // Shichen (时辰) display
 function getShichen(){
@@ -322,12 +323,12 @@ function getShichen(){
   const next=names[(idx+1)%12];
   return{now:names[idx],next:next};
 }
-const sc=getShichen();
-document.getElementById('shichen-display').innerHTML='此刻 '+sc.now+'<br>为你卜算 → <b>'+sc.next+'</b>';
+try{const sc=getShichen();
+document.getElementById('shichen-display').innerHTML='此刻 '+sc.now+'<br>为你卜算 → <b>'+sc.next+'</b>';}catch(e){}
 document.getElementById('btn-start').addEventListener('click',startGame);
 
 function startGame(){
-  const chip=document.querySelector('.chip.on');cfg.theme=chip?chip.dataset.v:'自由发挥';cfg.favs=document.getElementById('inp-fav').value.trim();
+  const chip=document.querySelector('.chip.on');cfg.theme=chip?chip.dataset.v:'迷茫';cfg.favs=document.getElementById('inp-fav').value.trim();
   cfg.apiUrl=document.getElementById('inp-api-url').value.trim();cfg.apiKey=document.getElementById('inp-api-key').value.trim();cfg.model=document.getElementById('inp-api-model').value.trim();
   cfg.likedSet=new Set([...(LIKED[cfg.theme]||LIKED['迷茫'])]);
   if(cfg.favs)for(const c of cfg.favs.replace(/[,，\s]+/g,''))cfg.likedSet.add(c);
@@ -340,7 +341,7 @@ function buildP(text){
   particles=[];holes=[];consumed=[];stains=[];trail=[];splashes=[];totalHC=0;colMap=[];reflowTimer=0;
   FS=T.fontSize.v;LH=FS*1.35;CW=FS*.8;
   COLS=Math.floor((W-16)/CW);ROWS=Math.floor((H-8)/LH);
-  let t=text.replace(/[\n\r\s]/g,'');const maxP=isPhone?1800:isTablet?6000:COLS*ROWS;const need=Math.min(COLS*ROWS,maxP);
+  let t=text.replace(/[\n\r\s]/g,'');const autoMax=isPhone?1800:isTablet?6000:COLS*ROWS;const userMax=T.charTotal.v>0?T.charTotal.v:autoMax;const need=Math.min(COLS*ROWS,userMax);
   while(t.length<need)t+=t;t=t.slice(0,need);const ch=[...t];
   const aMin=T.alphaMin.v,aRange=T.alphaMax.v-aMin;
   for(let c=0;c<COLS;c++)colMap[c]=[];
@@ -365,7 +366,10 @@ function reflowColumns(){
   }
 }
 
-canvas.addEventListener('click',e=>{if(!started||ended)return;const r=canvas.getBoundingClientRect();
+canvas.addEventListener('click',e=>{if(!started||ended)return;
+  // Cap holes on phones
+  if(isPhone&&holes.filter(function(h){return h.alive}).length>=5)return;
+  const r=canvas.getBoundingClientRect();
   holes.push({x:e.clientX-r.left,y:e.clientY-r.top,mass:1,eaten:0,age:0,ph:Math.random()*6.28,
     vx:(Math.random()-.5)*T.baseSpeed.v,vy:(Math.random()-.5)*T.baseSpeed.v*.7,
     seekTimer:0,seekInterval:.35,dt2:0,di:1.5,idle:0,fade:0,alive:true,vR:T.initRadius.v,mf:0,pile:[],excitement:0,
@@ -410,7 +414,7 @@ function physics(dt){
 
     // Trail emission
     h.trailT+=dt;const spd0=Math.sqrt(h.vx*h.vx+h.vy*h.vy);
-    if(h.trailT>.06&&spd0>15&&trail.length<60){h.trailT=0;
+    if(!isPhone&&h.trailT>.06&&spd0>15&&trail.length<60){h.trailT=0;
       trail.push({x:h.prevX,y:h.prevY,r:h.vR*.25+Math.random()*2,life:.6+Math.random()*.3,a:.12})}
     h.prevX=h.x;h.prevY=h.y;
 
@@ -446,7 +450,7 @@ function physics(dt){
     for(const h of holes){if(!h.alive)continue;const dx=h.x-p.x,dy=h.y-p.y,d=Math.sqrt(dx*dx+dy*dy);if(d<cD){cD=d;cH=h}
       if(d<AR&&d>1){const f=G*h.mass/(d*d),nx=dx/d,ny=dy/d;fx+=nx*f;fy+=ny*f;if(d<AR*.5){fx+=-ny*f*swirlS;fy+=nx*f*swirlS}}}
     if(cH&&cD<CD){p.dead=true;cH.eaten++;consumed.push(p.c);changed=true;cH.jellyV+=.8;
-      stains.push({x:p.ox,y:p.ty,a:.07+Math.random()*.05,r:CW*.2+Math.random()*CW*.12});
+      if(stains.length<(isPhone?200:2000))stains.push({x:p.ox,y:p.ty,a:.07+Math.random()*.05,r:CW*.2+Math.random()*CW*.12});
       const rr=cH.vR*.65;cH.pile.push({c:p.c,dx:(Math.random()-.5)*rr*1.8,dy:(Math.random()-.5)*rr*1.8,rot:(Math.random()-.5)*2.5,sc:.5+Math.random()*.65,al:.35+Math.random()*.4})}
     else{p.vx=(p.vx+fx*dt)*.955;p.vy=(p.vy+fy*dt)*.955;
       const dy2=p.ty-p.y;if(dy2>1){p.vy+=fallG*dt}
@@ -494,7 +498,7 @@ async function compose(){const toast=document.getElementById('ai-toast'),useAPI=
    - "相信自己加油"
 
 严格返回JSON（无markdown无代码块）：
-{"sentence":"签文","reason":"一句话解签：这句话想告诉问卦者什么"}`;const resp=await fetch(cfg.apiUrl,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},body:JSON.stringify({model:cfg.model||'moonshot-v1-32k',messages:[{role:'system',content:sys},{role:'user',content:'问卦者当下情绪：'+cfg.theme+'\n\n以下是命签拾取到的文字碎片（共'+consumed.length+'字）：\n'+consumed.join('')+'\n\n请卜算下一个时辰的签文。'}],temperature:.85,max_tokens:500})});const data=await resp.json();const raw=data.choices?.[0]?.message?.content||'';const cl=raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();let r;try{r=JSON.parse(cl)}catch{r={sentence:cl.slice(0,40),reason:''}}toast.classList.remove('show');showR(r);return}catch(e){toast.classList.remove('show')}}
+{"sentence":"签文","reason":"一句话解签：这句话想告诉问卦者什么"}`;const resp=await fetch(cfg.apiUrl,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},body:JSON.stringify({model:cfg.model||'moonshot-v1-32k',messages:[{role:'system',content:sys},{role:'user',content:'问卦者当下情绪：'+cfg.theme+'\n\n以下是命签拾取到的文字碎片（共'+consumed.length+'字）：\n'+consumed.join('')+'\n\n请卜算下一个时辰的签文。'}],temperature:.85,max_tokens:500})});const data=await resp.json();const raw=(data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content)||'';const cl=raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();let r;try{r=JSON.parse(cl)}catch{r={sentence:cl.slice(0,40),reason:''}}toast.classList.remove('show');showR(r);return}catch(e){toast.classList.remove('show')}}
   toast.classList.add('show');document.getElementById('ai-toast-text').textContent='时辰正在凝聚…';await new Promise(r=>setTimeout(r,800));const fA=cfg.favs?cfg.favs.replace(/[,，\s]+/g,' ').split(' ').filter(Boolean):[];const r=localCompose(consumed,cfg.theme,fA);toast.classList.remove('show');showR(r)}
 function showR(d){ended=true;setTimeout(()=>{document.getElementById('rv-sent').textContent=d.sentence||'…';document.getElementById('rv-reason').textContent=d.reason?'— '+d.reason:'';document.getElementById('rv-total').textContent=total;document.getElementById('rv-eaten').textContent=consumed.length;document.getElementById('rv-holes').textContent=totalHC;document.getElementById('reveal').classList.add('show')},600)}
 
@@ -539,6 +543,7 @@ function render(){
     // Helper: draw wobbly circle path (arrow fn — Safari crashes on function decl in block scope)
     const wobblePath=(R,intensity)=>{
       ctx.beginPath();
+      if(isPhone){ctx.arc(0,0,R*stretch,0,Math.PI*2);ctx.closePath();return}
       const n=36;
       for(let i=0;i<=n;i++){
         const a=i/n*Math.PI*2;
@@ -570,8 +575,8 @@ function render(){
     bodyG.addColorStop(.85,'rgba(190,180,165,.09)');bodyG.addColorStop(1,'rgba(150,140,125,.2)');
     wobblePath(baseR,1.5);ctx.fillStyle=bodyG;ctx.fill();
 
-    // 4. Rainbow iridescent rim (with fallback for older browsers)
-    if(ctx.createConicGradient){
+    // 4. Rainbow iridescent rim (with fallback for older browsers, skip on phones)
+    if(!isPhone&&ctx.createConicGradient){
       ctx.save();
       const iriG=ctx.createConicGradient(h.age*.3,0,0);
       iriG.addColorStop(0,'rgba(255,180,180,.12)');iriG.addColorStop(.17,'rgba(255,220,150,.10)');
@@ -624,12 +629,20 @@ function render(){
 
     // 8. Glass edge — dark contact line + inner bright line
     wobblePath(baseR,1.5);ctx.strokeStyle='rgba(110,100,88,.22)';ctx.lineWidth=1.4;ctx.stroke();
-    wobblePath(baseR-.8,1.5);ctx.strokeStyle='rgba(255,252,248,.08)';ctx.lineWidth=.6;ctx.stroke();
+    if(!isPhone){wobblePath(baseR-.8,1.5);ctx.strokeStyle='rgba(255,252,248,.08)';ctx.lineWidth=.6;ctx.stroke()}
 
-    // 9. Highlights (rendered in world space for proper light direction)
-    ctx.save();ctx.rotate(-moveAng);
-    // Clip to drop shape
-    ctx.save();ctx.rotate(moveAng);wobblePath(baseR,1.5);ctx.clip();ctx.rotate(-moveAng);
+    // 9. Highlights (skip elaborate version on phones)
+    if(isPhone){
+      // Simple highlight: one bright spot
+      ctx.save();ctx.rotate(-moveAng);
+      const sG=ctx.createRadialGradient(-baseR*.25,-baseR*.28,0,-baseR*.25,-baseR*.28,baseR*.4);
+      sG.addColorStop(0,'rgba(255,255,252,.3)');sG.addColorStop(1,'rgba(255,255,250,0)');
+      ctx.beginPath();ctx.arc(-baseR*.25,-baseR*.28,baseR*.4,0,Math.PI*2);ctx.fillStyle=sG;ctx.fill();
+      ctx.restore();
+    }else{
+      ctx.save();ctx.rotate(-moveAng);
+      // Clip to drop shape
+      ctx.save();ctx.rotate(moveAng);wobblePath(baseR,1.5);ctx.clip();ctx.rotate(-moveAng);
 
     // Large soft highlight (upper-left)
     const hlOx=-baseR*.28,hlOy=-baseR*.32;
@@ -650,6 +663,7 @@ function render(){
     ctx.beginPath();ctx.ellipse(baseR*.08,brY,baseR*.26,baseR*.1,.2,0,Math.PI*2);ctx.fillStyle=brG;ctx.fill();
 
     ctx.restore();ctx.restore();
+    } // end else (desktop highlights)
 
     ctx.restore(); // main transform
 
