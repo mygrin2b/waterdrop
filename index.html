@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<title>文字黑洞 · 拾句成诗</title>
+<title>下一个时辰</title>
 <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@400;600;700&family=Cormorant+Garamond:wght@400;600&family=Ma+Shan+Zheng&family=ZCOOL+KuaiLe&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Zhi+Mang+Xing&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.cnpmjs.org/css2?family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet" onerror="">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -89,22 +89,56 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC','Georgia'
 </head>
 <body>
 <!-- Settings -->
-<div id="so"><div class="warm-glow"></div><div class="panel"><div class="deco"></div><h1>文字黑洞</h1>
-<p class="sub">水滴漫游，吞噬四方文字<br>在废墟中拾字，压缩成一句洞见</p>
-<div class="field"><span class="fl">情绪 · 水滴偏好</span><div class="chips"><span class="chip on" data-v="自由发挥"><span class="ic">◯</span>自由发挥</span><span class="chip" data-v="温暖治愈"><span class="ic">☀</span>温暖治愈</span><span class="chip" data-v="孤独寂寞"><span class="ic">☾</span>孤独寂寞</span><span class="chip" data-v="荒诞幽默"><span class="ic">◇</span>荒诞幽默</span><span class="chip" data-v="哲理深邃"><span class="ic">∞</span>哲理深邃</span><span class="chip" data-v="浪漫唯美"><span class="ic">❋</span>浪漫唯美</span></div></div>
-<div class="field"><span class="fl">偏爱的字 <span class="opt">（水滴主动寻找）</span></span><input type="text" id="inp-fav" placeholder="月  自由  梦  光  远方"></div>
-<div class="field"><span class="fl">文本来源</span><select id="inp-src"><option value="default">默认 · 自我肯定</option><option value="poetry">唐诗宋词</option><option value="philosophy">哲学语录</option><option value="news">当代新闻</option><option value="file">上传文件 (MD / EPUB / TXT)</option><option value="custom">直接粘贴</option></select></div>
-<div class="field" id="file-wrap" style="display:none"><div class="upload-zone" id="drop-zone"><div>📄 点击选择或拖放文件<br><span style="font-size:10px;opacity:.6">.md / .epub / .txt</span></div><input type="file" id="file-input" accept=".md,.epub,.txt,.text,.markdown"></div><div class="file-info" id="file-info"></div></div>
+<div id="so"><div class="warm-glow"></div><div class="panel"><div class="deco"></div>
+<h1>下一个时辰</h1>
+<p class="sub" id="shichen-display"></p>
+
+<div class="field"><span class="fl">当下的情绪</span>
+<div class="chips">
+<span class="chip on" data-v="迷茫"><span class="ic">◌</span>迷茫</span>
+<span class="chip" data-v="期待"><span class="ic">☀</span>期待</span>
+<span class="chip" data-v="忧虑"><span class="ic">☁</span>忧虑</span>
+<span class="chip" data-v="平静"><span class="ic">水</span>平静</span>
+<span class="chip" data-v="躁动"><span class="ic">火</span>躁动</span>
+<span class="chip" data-v="欢喜"><span class="ic">❋</span>欢喜</span>
+</div></div>
+
+<div class="field"><span class="fl">当下的偏爱 <span class="opt">（命签会主动寻找这些字）</span></span>
+<input type="text" id="inp-fav" placeholder="随心写几个字…  光  远方  自由"></div>
+
+<div class="field"><span class="fl">当下想要选择的文本</span>
+<select id="inp-src">
+<option value="default">默认 · 自我肯定</option>
+<option value="poetry">唐诗宋词</option>
+<option value="philosophy">哲学语录</option>
+<option value="yijing">易经 · 周易</option>
+<option value="news">当代新闻</option>
+<option value="file">上传文件 (MD / EPUB / TXT)</option>
+<option value="custom">直接粘贴</option>
+</select></div>
+
+<div class="field" id="file-wrap" style="display:none">
+<div class="upload-zone" id="drop-zone"><div>📄 点击选择或拖放文件<br><span style="font-size:10px;opacity:.6">.md / .epub / .txt</span></div>
+<input type="file" id="file-input" accept=".md,.epub,.txt,.text,.markdown"></div>
+<div class="file-info" id="file-info"></div></div>
 <div class="field" id="custom-wrap" style="display:none"><span class="fl">粘贴文字</span><textarea id="inp-custom" placeholder="粘贴…"></textarea></div>
-<div class="ctrigger" id="api-toggle"><span class="arr" id="api-arrow">▸</span><span>AI 接口设置</span></div>
-<div class="cbody" id="api-body"><div class="field"><span class="fl">API 地址</span><input type="text" id="inp-api-url" value="https://api.moonshot.cn/v1/chat/completions"></div><div class="field"><span class="fl">API Key</span><input type="password" id="inp-api-key" value="sk-rJECXVRv1JHkzBa2kw0iBtkoSdHI82eYHRMzfvJzrcHZ57GU"></div><div class="field"><span class="fl">模型</span><input type="text" id="inp-api-model" value="moonshot-v1-32k"></div><p style="font-size:10px;color:var(--ink-ghost);line-height:1.5;margin-top:-4px">留空 = 本地拼字</p></div>
-<div class="sep"></div><button class="btn-go" id="btn-start">释放水滴</button></div></div>
+
+<!-- API hidden: triple-tap the deco line to reveal -->
+<div class="cbody" id="api-body">
+<div class="field"><span class="fl">API 地址</span><input type="text" id="inp-api-url" value="https://api.moonshot.cn/v1/chat/completions"></div>
+<div class="field"><span class="fl">API Key</span><input type="password" id="inp-api-key" value="sk-rJECXVRv1JHkzBa2kw0iBtkoSdHI82eYHRMzfvJzrcHZ57GU"></div>
+<div class="field"><span class="fl">模型</span><input type="text" id="inp-api-model" value="moonshot-v1-32k"></div>
+</div>
+
+<div class="sep"></div>
+<button class="btn-go" id="btn-start">叩问此刻</button>
+</div></div>
 
 <!-- HUD -->
-<div id="hud"><div class="hud-brand">文字黑洞</div><div class="hud-prog"><div class="hud-prog-top"><span>吞噬</span><span id="hud-pct">0%</span></div><div class="hud-bar"><div class="hud-fill" id="hud-fill"></div></div></div><div class="hud-stat">水滴 <b id="hud-holes">0</b></div><div class="hud-stat">收集 <b id="hud-chars">0</b></div></div>
+<div id="hud"><div class="hud-brand">下一个时辰</div><div class="hud-prog"><div class="hud-prog-top"><span>卦象</span><span id="hud-pct">0%</span></div><div class="hud-bar"><div class="hud-fill" id="hud-fill"></div></div></div><div class="hud-stat">命签 <b id="hud-holes">0</b></div><div class="hud-stat">拾 <b id="hud-chars">0</b> 字</div></div>
 <canvas id="canvas"></canvas>
-<div id="hint" style="display:none">轻触画布，放置水滴</div>
-<div id="ai-toast"><div class="spinner"></div><span id="ai-toast-text">拾字中…</span></div>
+<div id="hint" style="display:none">轻触画布，落一枚命签</div>
+<div id="ai-toast"><div class="spinner"></div><span id="ai-toast-text">时辰正在凝聚…</span></div>
 
 <!-- Tune button -->
 <div id="tune-btn" title="调参">⚙</div>
@@ -117,28 +151,39 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC','Georgia'
 </div>
 
 <!-- Reveal -->
-<div id="reveal"><div class="rv-glow"></div><div class="rv-line"></div><div class="rv-tag">废 墟 拾 字</div><div class="rv-sentence" id="rv-sent"></div><div class="rv-reason" id="rv-reason"></div><div class="rv-sep"></div><div class="rv-stats"><div class="rv-stat"><div class="rv-num" id="rv-total">0</div><div class="rv-lbl">总字符</div></div><div class="rv-stat"><div class="rv-num" id="rv-eaten">0</div><div class="rv-lbl">已吞噬</div></div><div class="rv-stat"><div class="rv-num" id="rv-holes">0</div><div class="rv-lbl">水滴</div></div></div><button class="btn-again" onclick="location.reload()">再来一次</button></div>
+<div id="reveal"><div class="rv-glow"></div><div class="rv-line"></div>
+<div class="rv-tag">时 辰 之 签</div>
+<div class="rv-sentence" id="rv-sent"></div>
+<div class="rv-reason" id="rv-reason"></div>
+<div class="rv-sep"></div>
+<div class="rv-stats">
+<div class="rv-stat"><div class="rv-num" id="rv-total">0</div><div class="rv-lbl">卦中字</div></div>
+<div class="rv-stat"><div class="rv-num" id="rv-eaten">0</div><div class="rv-lbl">已拾取</div></div>
+<div class="rv-stat"><div class="rv-num" id="rv-holes">0</div><div class="rv-lbl">命签数</div></div>
+</div>
+<button class="btn-again" onclick="location.reload()">再问一卦</button>
+</div>
 
 <script>
 /* ═══════ TUNABLE CONFIG ═══════ */
 const T={
   // 物理
-  gravity:    {v:600, min:50,  max:2000, step:50,  label:'引力强度',     group:'物理'},
-  attractR:   {v:200, min:50,  max:500,  step:10,  label:'吸引半径',     group:'物理'},
-  consumeR:   {v:0.8, min:0.3, max:2.0,  step:0.1, label:'吞噬距离(×字宽)', group:'物理'},
+  gravity:    {v:200, min:50,  max:2000, step:50,  label:'引力强度',     group:'物理'},
+  attractR:   {v:70, min:50,  max:500,  step:10,  label:'吸引半径',     group:'物理'},
+  consumeR:   {v:0.4, min:0.3, max:2.0,  step:0.1, label:'吞噬距离(×字宽)', group:'物理'},
   swirlStr:   {v:0.25,min:0,   max:1.0,  step:0.05,label:'漩涡强度',     group:'物理'},
   mergeD:     {v:55,  min:20,  max:150,  step:5,   label:'融合距离',     group:'物理'},
   idleTime:   {v:3.5, min:1,   max:10,   step:0.5, label:'空域消散(秒)', group:'物理'},
   fadeDur:    {v:1.8, min:0.5, max:5,    step:0.1, label:'消散速度(秒)', group:'物理'},
   // 运动
-  baseSpeed:  {v:55,  min:10,  max:200,  step:5,   label:'基础速度',     group:'运动'},
-  seekBoost:  {v:40,  min:0,   max:150,  step:5,   label:'觅食加速',     group:'运动'},
+  baseSpeed:  {v:150,  min:10,  max:200,  step:5,   label:'基础速度',     group:'运动'},
+  seekBoost:  {v:75,  min:0,   max:150,  step:5,   label:'觅食加速',     group:'运动'},
   seekRange:  {v:350, min:50,  max:800,  step:25,  label:'嗅觉范围',     group:'运动'},
   returnStr:  {v:0.6, min:0,   max:3.0,  step:0.1, label:'回弹力度',     group:'运动'},
   fallGrav:   {v:120, min:0,   max:500,  step:10,  label:'坠落重力',     group:'运动'},
   // 文字
-  fontSize:   {v:16,  min:10,  max:28,   step:1,   label:'字号',         group:'文字'},
-  fontFamily: {v:'Noto Serif SC', type:'select', label:'字体', group:'文字',
+  fontSize:   {v:24,  min:10,  max:28,   step:1,   label:'字号',         group:'文字'},
+  fontFamily: {v:'Long Cang', type:'select', label:'字体', group:'文字',
     options:[
       {v:'Noto Serif SC',   label:'思源宋体'},
       {v:'Noto Sans SC',    label:'思源黑体'},
@@ -154,7 +199,7 @@ const T={
       {v:'SimHei',          label:'黑体(系统)'},
       {v:'FangSong',        label:'仿宋(系统)'},
     ]},
-  fontWeight: {v:600, min:300, max:900,  step:100, label:'字重',         group:'文字'},
+  fontWeight: {v:300, min:300, max:900,  step:100, label:'字重',         group:'文字'},
   alphaMin:   {v:0.25,min:0.05,max:0.8,  step:0.05,label:'最浅透明度',   group:'文字'},
   alphaMax:   {v:0.95,min:0.3, max:1.0,  step:0.05,label:'最深透明度',   group:'文字'},
   inkDarkR:   {v:18,  min:0,   max:80,   step:2,   label:'深墨R',       group:'文字'},
@@ -212,16 +257,17 @@ document.getElementById('tune-btn').addEventListener('click',()=>{document.getEl
 
 /* ═══════ TEXT & LIKED ═══════ */
 const SRC={default:'我不等待任何人给我意义，我是意义的起点。我不依赖结果来证明我的价值，我选择的每一刻都在书写价值。生命不是等待风暴过去，而是学会在雨中舞蹈。每一天都是新的开始，每个选择都有力量。在这个世界上，你就是光，你就是答案。不必追寻远方，此刻就是永恒。',poetry:'床前明月光疑是地上霜举头望明月低头思故乡春眠不觉晓处处闻啼鸟夜来风雨声花落知多少大漠孤烟直长河落日圆白日依山尽黄河入海流欲穷千里目更上一层楼千山鸟飞绝万径人踪灭孤舟蓑笠翁独钓寒江雪明月几时有把酒问青天但愿人长久千里共婵娟问君能有几多愁恰似一江春水向东流天生我材必有用千金散尽还复来长风破浪会有时直挂云帆济沧海落霞与孤鹜齐飞秋水共长天一色海上生明月天涯共此时',philosophy:'未经审视的人生不值得过我思故我在人是生而自由的却无往不在枷锁之中他人即地狱世界是我的表象存在先于本质人不能两次踏入同一条河流知道的越多才知道自己知道的越少吾生也有涯而知也无涯天地不仁以万物为刍狗道可道非常道名可名非常名大音希声大象无形天地与我并生而万物与我为一凡是过往皆为序章万物皆有裂痕那是光照进来的地方',news:'科技正在重新定义我们理解世界的方式人工智能的发展速度超出了所有人的预期气候变化带来的挑战需要全球协作数字化转型正在改变每一个传统行业的面貌太空探索迎来了新的黄金时代量子计算有望在未来十年内实现突破可持续发展不再是口号而是生存必需教育的本质正在被重新思考和定义'};
-const LIKED={'自由发挥':'意义生命自由光明力量选择价值起点梦想远方希望世界时间永恒真心道理深渊桥裂痕沉默','温暖治愈':'温暖光阳心爱花笑生命希望美好甜乐福安春晴天柔善良拥抱信任归宿','孤独寂寞':'孤独寂寞月夜影冷静空默远离别泪雨霜雪暗深秋残沉寂荒原王国','荒诞幽默':'笑怪奇疯狂乱醉梦幻假真荒诞戏游玩闹痴傻阴沟星星自由枷锁','哲理深邃':'道理思知悟生死命天地万物心灵真空无有始终虚实序章裂痕光审视','浪漫唯美':'月花风雪星云梦蝶霞虹露烟柳春秋诗画琴舞歌情清欢故乡醉压'};
+const LIKED={'迷茫':'路方向光明暗迷雾道前行寻找出口答案彼岸远方选择岔口深渊桥','期待':'望盼来新开始春花绽放光明天未来希望种子生长破晓曙升','忧虑':'忧愁虑恐惧深暗沉重压风雨雷云密布险阻关山难越夜长','平静':'静水流深安宁泰然无波澄明清透月湖镜心自在从容淡','躁动':'火焰烧灼奔涌激荡雷电裂变撕破冲突挣扎突破爆发力量','欢喜':'喜乐笑欢歌舞飞翔花开明媚灿烂甜蜜温暖拥抱庆贺丰收'};
+const SRC_EXTRA={yijing:'天行健君子以自强不息地势坤君子以厚德载物亢龙有悔潜龙勿用见龙在田飞龙在天利见大人元亨利贞穷则变变则通通则久否极泰来物极必反刚柔相摩八卦相荡鼓之以雷霆润之以风雨日月运行一寒一暑乾道成男坤道成女积善之家必有余庆积不善之家必有余殃善不积不足以成名恶不积不足以灭身一阴一阳之谓道仁者见之谓之仁知者见之谓之知百姓日用而不知故君子之道鲜矣形而上者谓之道形而下者谓之器化而裁之谓之变推而行之谓之通'};
 const SEEDS={
-  '自由发挥':['万物皆有裂痕那是光照进来的地方','所有的远方都是从脚下出发的','沉默是语言抵达真相前的最后一站','你是自己的深渊也是自己的桥','每一刻都在废墟上重建意义','存在先于本质而选择先于存在','风暴不会永远持续但你会','从不曾拥有所以从不曾失去','所谓自由就是被别人讨厌的勇气','时间是唯一不撒谎的叙述者'],
-  '温暖治愈':['你不必成为光但可以靠近光','温暖是一种不需要理由的抵达','在所有崩塌之后花依然会开','生命自有温度不必向冬天解释','你值得被一个不讲条件的拥抱','柔软不是软弱而是水穿石的耐心','每一天都在练习值得被爱','所有的伤口最终都会变成入口'],
-  '孤独寂寞':['孤独是灵魂向自己发出的邀请','千山万径人踪灭独与天地共此寂','月光不问归期照亮所有失眠的人','沉默中听见的才是自己真正的声音','一个人的荒原也是一个人的王国','孤独不是被遗忘而是选择记住自己','所有的离别都是为了更深的重逢'],
-  '荒诞幽默':['地狱就是他人而天堂是自欺','自由是一条拴在无限长绳上的狗','人类一思考上帝就发笑','知道得越多就越确信什么都不知道','存在本身就是宇宙讲的最长的笑话','我们都在阴沟里但有人在看星星','认真是荒诞最忠实的同谋'],
-  '哲理深邃':['道可道非常道名可名非常名','天地不仁以万物为刍狗','大音希声大象无形道隐无名','凡是过往皆为序章','吾生也有涯而知也无涯','天地与我并生万物与我为一','未经审视的人生不值得过','知者不言言者不知','人不能两次踏入同一条河流'],
-  '浪漫唯美':['海上生明月天涯共此时','落霞与孤鹜齐飞秋水共长天一色','长风破浪会有时直挂云帆济沧海','醉后不知天在水满船清梦压星河','从前慢一生只够爱一个人','人间有味是清欢','月是故乡明露从今夜白','此身合是诗人未愿风前月下归']
+  '迷茫':['所有的迷雾终将散去但你得先走进去','方向不在远方在脚下的第一步','迷路是发现新路的前奏','深渊也是通道只要你不停下来','雾散之前光已经在了','不知道去哪里的人哪条路都是对的'],
+  '期待':['所有的等待都在酝酿一场不期而遇','破晓前的黑暗是光的准备','种子不急花期自有安排','你期待的正在来的路上','春天从不问花准备好了没有','下一刻永远比这一刻更值得'],
+  '忧虑':['忧虑是灵魂在为你预演一场不会发生的戏','山高月小水落石出','你担心的事十之八九不会发生','暴风雨终将过去而你比暴风雨更持久','夜越长说明黎明越近','所有的重压最终都会变成你的地基'],
+  '平静':['静水深处自有暗涌但水面不必知道','真正的平静是风暴眼中央的宁定','从容不是没有欲望是欲望与耐心握手言和','水不争故无尤','大象无形大音希声你的平静就是你的力量','心如止水不是无波是波来波去都无碍'],
+  '躁动':['躁动是能量在寻找出口','火焰不问方向只管燃烧','你体内有一场风暴它在等一个值得的理由','所有的突破都从一次不安分开始','裂变是重生的第一步','别压住躁动让它带你去该去的地方'],
+  '欢喜':['欢喜是此刻最诚实的表达','花开不是为了被看见而是因为时候到了','你的笑容是你给世界最好的答案','此刻值得被好好记住','丰收不在终点在你弯腰的每一刻','活着本身就是一件值得庆祝的事']
 };
-function localCompose(chars,theme,favs){const pool={};for(const c of chars){if(/[\s，。、！？；：""''（）.,\n]/.test(c))continue;pool[c]=(pool[c]||0)+1}const seeds=[...(SEEDS[theme]||SEEDS['自由发挥']),...SEEDS['自由发挥']];let best=null,bestS=-1;for(const s of seeds){const need={};for(const c of s)if(!/\s/.test(c))need[c]=(need[c]||0)+1;let m=0,t=0;for(const[c,n]of Object.entries(need)){t+=n;m+=Math.min(n,pool[c]||0)}let fb=0;if(favs)for(const f of favs)if(s.includes(f))fb+=2;const sc=m/t+fb*.05;if(sc>bestS){bestS=sc;best=s}}if(bestS<.5){const av=Object.keys(pool);const nice=av.filter(c=>'光明月风花雪水山云天地日星梦心爱人生命自由诗意义远方希望力量道真深空沉默裂痕桥渊'.includes(c));best=(nice.length>=4?nice:av).slice(0,10).join('')}return{sentence:best||'在碎片中寻找意义',reason:'从'+chars.length+'个碎片中拾取'}}
+function localCompose(chars,theme,favs){const pool={};for(const c of chars){if(/[\s，。、！？；：""''（）.,\n]/.test(c))continue;pool[c]=(pool[c]||0)+1}const seeds=[...(SEEDS[theme]||SEEDS['迷茫']),...SEEDS['迷茫']];let best=null,bestS=-1;for(const s of seeds){const need={};for(const c of s)if(!/\s/.test(c))need[c]=(need[c]||0)+1;let m=0,t=0;for(const[c,n]of Object.entries(need)){t+=n;m+=Math.min(n,pool[c]||0)}let fb=0;if(favs)for(const f of favs)if(s.includes(f))fb+=2;const sc=m/t+fb*.05;if(sc>bestS){bestS=sc;best=s}}if(bestS<.5){const av=Object.keys(pool);const nice=av.filter(c=>'光明月风花雪水山云天地日星梦心爱人生命自由诗意义远方希望力量道真深空沉默裂痕桥渊'.includes(c));best=(nice.length>=4?nice:av).slice(0,10).join('')}return{sentence:best||'在碎片中寻找意义',reason:'从'+chars.length+'个碎片中拾取'}}
 
 /* File loading */
 let loadedText='';
@@ -250,27 +296,43 @@ function resize(){
   if(isPhone&&dpr>2)dpr=2;
   if(isTablet&&dpr>2)dpr=2;
   canvas.width=W*dpr;canvas.height=H*dpr;
+  // Safari canvas limit ~16MP — scale down if exceeded
+  if(canvas.width*canvas.height>16000000){const s=Math.sqrt(16000000/(canvas.width*canvas.height));canvas.width=Math.floor(canvas.width*s);canvas.height=Math.floor(canvas.height*s);dpr=canvas.width/W}
   canvas.style.width=W+'px';canvas.style.height=H+'px';
   ctx.setTransform(dpr,0,0,dpr,0,0);
   grainImg=null;
 }
 addEventListener('resize',resize);
 // iOS orientation change fires resize late — double-tap it
-screen.orientation?.addEventListener('change',()=>{setTimeout(resize,100);setTimeout(resize,350)});
+try{screen.orientation?.addEventListener('change',()=>{setTimeout(resize,100);setTimeout(resize,350)})}catch(e){}
+window.addEventListener('orientationchange',()=>{setTimeout(resize,150);setTimeout(resize,400)});
 resize();
 function grain(){if(grainImg&&grainImg.width===W)return grainImg;const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d'),d=g.createImageData(W,H);for(let i=0;i<d.data.length;i+=4){const v=Math.random()*20;d.data[i]=v;d.data[i+1]=v;d.data[i+2]=v;d.data[i+3]=8}g.putImageData(d,0,0);grainImg=c;return c}
 
 document.querySelectorAll('.chip').forEach(el=>{el.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on')})});
-document.getElementById('api-toggle').addEventListener('click',()=>{document.getElementById('api-body').classList.toggle('open');document.getElementById('api-arrow').classList.toggle('open')});
+// Hidden API toggle: triple-tap the deco line
+let decoTaps=0,decoTimer=0;
+document.querySelector('.deco')?.addEventListener('click',()=>{decoTaps++;clearTimeout(decoTimer);decoTimer=setTimeout(()=>{decoTaps=0},600);if(decoTaps>=3){decoTaps=0;document.getElementById('api-body').classList.toggle('open')}});
+
+// Shichen (时辰) display
+function getShichen(){
+  const h=new Date().getHours();
+  const names=['子时·夜半','丑时·鸡鸣','寅时·平旦','卯时·日出','辰时·食时','巳时·隅中','午时·日中','未时·日昳','申时·哺时','酉时·日入','戌时·黄昏','亥时·人定'];
+  const idx=Math.floor(((h+1)%24)/2);
+  const next=names[(idx+1)%12];
+  return{now:names[idx],next:next};
+}
+const sc=getShichen();
+document.getElementById('shichen-display').innerHTML='此刻 '+sc.now+'<br>为你卜算 → <b>'+sc.next+'</b>';
 document.getElementById('btn-start').addEventListener('click',startGame);
 
 function startGame(){
   const chip=document.querySelector('.chip.on');cfg.theme=chip?chip.dataset.v:'自由发挥';cfg.favs=document.getElementById('inp-fav').value.trim();
   cfg.apiUrl=document.getElementById('inp-api-url').value.trim();cfg.apiKey=document.getElementById('inp-api-key').value.trim();cfg.model=document.getElementById('inp-api-model').value.trim();
-  cfg.likedSet=new Set([...(LIKED[cfg.theme]||LIKED['自由发挥'])]);
+  cfg.likedSet=new Set([...(LIKED[cfg.theme]||LIKED['迷茫'])]);
   if(cfg.favs)for(const c of cfg.favs.replace(/[,，\s]+/g,''))cfg.likedSet.add(c);
   const src=document.getElementById('inp-src').value;
-  let text=src==='file'&&loadedText?loadedText.length>2000?loadedText.slice(Math.random()*(loadedText.length-2000)|0,Infinity).slice(0,5000):loadedText:src==='custom'?document.getElementById('inp-custom').value.trim()||SRC.default:SRC[src]||SRC.default;
+  let text=src==='file'&&loadedText?loadedText.length>2000?loadedText.slice(Math.random()*(loadedText.length-2000)|0,Infinity).slice(0,5000):loadedText:src==='custom'?document.getElementById('inp-custom').value.trim()||SRC.default:SRC_EXTRA[src]||SRC[src]||SRC.default;
   buildP(text);document.getElementById('so').classList.add('hidden');document.getElementById('hud').classList.add('show');document.getElementById('tune-btn').classList.add('show');document.getElementById('hint').style.display='block';started=true;lastT=performance.now();
 }
 
@@ -278,7 +340,7 @@ function buildP(text){
   particles=[];holes=[];consumed=[];stains=[];trail=[];splashes=[];totalHC=0;colMap=[];reflowTimer=0;
   FS=T.fontSize.v;LH=FS*1.35;CW=FS*.8;
   COLS=Math.floor((W-16)/CW);ROWS=Math.floor((H-8)/LH);
-  let t=text.replace(/[\n\r\s]/g,'');const maxP=isPhone?2500:isTablet?6000:COLS*ROWS;const need=Math.min(COLS*ROWS,maxP);
+  let t=text.replace(/[\n\r\s]/g,'');const maxP=isPhone?1800:isTablet?6000:COLS*ROWS;const need=Math.min(COLS*ROWS,maxP);
   while(t.length<need)t+=t;t=t.slice(0,need);const ch=[...t];
   const aMin=T.alphaMin.v,aRange=T.alphaMax.v-aMin;
   for(let c=0;c<COLS;c++)colMap[c]=[];
@@ -348,7 +410,7 @@ function physics(dt){
 
     // Trail emission
     h.trailT+=dt;const spd0=Math.sqrt(h.vx*h.vx+h.vy*h.vy);
-    if(h.trailT>.06&&spd0>15){h.trailT=0;
+    if(h.trailT>.06&&spd0>15&&trail.length<60){h.trailT=0;
       trail.push({x:h.prevX,y:h.prevY,r:h.vR*.25+Math.random()*2,life:.6+Math.random()*.3,a:.12})}
     h.prevX=h.x;h.prevY=h.y;
 
@@ -374,7 +436,8 @@ function physics(dt){
     const tw=k.eaten+g.eaten+2;k.x=(k.x*(k.eaten+1)+g.x*(g.eaten+1))/tw;k.y=(k.y*(k.eaten+1)+g.y*(g.eaten+1))/tw;
     k.eaten+=g.eaten;k.mass=Math.min(k.mass+g.mass*.6,24);k.vx=(k.vx+g.vx)*.5;k.vy=(k.vy+g.vy)*.5;k.mf=1;k.idle=0;k.fade=0;k.pile=k.pile.concat(g.pile);k.jellyV+=5;g.alive=false;
     // Splash particles
-    for(let s=0;s<6;s++){const ang=Math.random()*Math.PI*2,spd=60+Math.random()*80;
+    const splashN=isPhone?3:6;
+    for(let s=0;s<splashN&&splashes.length<30;s++){const ang=Math.random()*Math.PI*2,spd=60+Math.random()*80;
       splashes.push({x:mx,y:my,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd-40,r:2+Math.random()*3,life:.5+Math.random()*.3})}}}
   document.getElementById('hud-holes').textContent=holes.filter(h=>h.alive).length;
 
@@ -395,40 +458,44 @@ function physics(dt){
 }
 
 async function compose(){const toast=document.getElementById('ai-toast'),useAPI=cfg.apiKey&&cfg.apiUrl;
-  if(useAPI){toast.classList.add('show');document.getElementById('ai-toast-text').textContent='拾字中…';try{const sys=`;; 角色: 废墟拾字人
-;; 风格: ("鲁迅" "Oscar Wilde" "庄子" "维特根斯坦")
-;; 擅长: 一针见血
-;; 表达: (隐喻 (压缩到极致 (哲理含义 抓住本质)))
+  const sc=getShichen();
+  if(useAPI){toast.classList.add('show');document.getElementById('ai-toast-text').textContent='时辰正在凝聚…';try{const sys=`;; 角色: 时辰卜者
+;; 你是一位隐居在文字深处的卜者。你从散落的文字碎片中拾取签文。
+;; 风格: ("周易" "庄子" "鲁迅" "纪伯伦")
+;; 擅长: 一针见血的洞见
+;; 表达: (隐喻 (压缩到极致 (命理暗示 抓住当下本质)))
 
-(defun 拾字成诗 (碎片)
-  "从被吞噬的文字碎片中，拾取散落的意义"
-  (let* ((本质 (还原本质 (抛开表象 碎片)))
-         (洞见 (一句话表达 (隐喻 (一针见血 本质))))
-         (诗句 (压缩凝练 (文学性 (哲理深度 洞见)))))
-    ;; 像庄子写寓言：用最少的字抵达最深的真
-    ;; 像鲁迅写杂文：句句见骨，字字见血
-    ;; 像维特根斯坦：不可说的必须沉默，可说的必须精准
-    诗句))
+(defun 卜算时辰 (碎片 情绪)
+  "从碎片中拾取字符，为问卦者的下一个时辰写一句签文"
+  (let* ((当下 (感知情绪 情绪))
+         (征兆 (从碎片中寻找呼应 当下 碎片))
+         (签文 (一句话 (隐喻 (命理口吻 (指向未来一小时 征兆))))))
+    ;; 不是算命，是用文字照见此刻的心
+    ;; 不要说"一切都会好的"，要说出问卦者自己都没意识到的东西
+    ;; 像周易：用意象暗示，不直说吉凶
+    ;; 像庄子：用寓言说理，留有余味
+    签文))
 
 规则：
 1. 只能使用碎片中出现的字符（每字最多用其出现次数）
-2. 情绪基调：${cfg.theme}
-3. ${cfg.favs?'种子意象：'+cfg.favs+'，围绕它们展开':'自由选择最有张力的字'}
-4. 长度：8-25字。宁短勿长，一字不多余
-5. 追求：压缩到极致的诗意。不要口号，不要鸡汤。要洞见，要隐喻，要那种读完愣三秒的力量
-6. 好的例子：
-   - "万物皆有裂痕，那是光照进来的地方"
-   - "你是自己的深渊，也是自己的桥"
-   - "沉默是语言抵达真相前的最后一站"
-   - "所有的远方都是从脚下出发的"
-7. 坏的例子（绝对不要写这种）：
-   - "让我们一起加油吧"
-   - "生活充满了美好和希望"
-   - "相信自己你是最棒的"
+2. 问卦者当下的情绪：${cfg.theme}
+3. ${cfg.favs?'问卦者偏爱的意象：'+cfg.favs:'自由选择最有共鸣的字'}
+4. 当前时辰：${sc.now}，签文指向：${sc.next}
+5. 长度：8-25字。签文要短，像刻在竹简上
+6. 要求：写一句给"下一个时辰"的签文。不是鸡汤，不是口号。是那种让人读完愣住、然后若有所悟的一句话。用命理的口吻，但说的是哲学的话。
+7. 好的例子：
+   - "雾散之前，光已经在了"
+   - "你担心的事，十之八九不会发生"
+   - "静水深处自有暗涌，但水面不必知道"
+   - "所有的等待都在酝酿一场不期而遇"
+8. 坏的例子（绝对不要写这种）：
+   - "好运即将到来"
+   - "一切都会好起来的"
+   - "相信自己加油"
 
 严格返回JSON（无markdown无代码块）：
-{"sentence":"你的诗句","reason":"一句话：为什么选这些字，它们之间有什么隐藏的张力"}`;const resp=await fetch(cfg.apiUrl,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},body:JSON.stringify({model:cfg.model||'moonshot-v1-32k',messages:[{role:'system',content:sys},{role:'user',content:'以下是黑洞吞噬到的文字碎片（共'+consumed.length+'字）：\n\n'+consumed.join('')+'\n\n请从中拾字成诗。记住：压缩到极致，一字不多余。'}],temperature:.85,max_tokens:500})});const data=await resp.json();const raw=data.choices?.[0]?.message?.content||'';const cl=raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();let r;try{r=JSON.parse(cl)}catch{r={sentence:cl.slice(0,40),reason:'自由创作'}}toast.classList.remove('show');showR(r);return}catch(e){toast.classList.remove('show')}}
-  toast.classList.add('show');document.getElementById('ai-toast-text').textContent='废墟拾字人正在凝视碎片…';await new Promise(r=>setTimeout(r,800));const fA=cfg.favs?cfg.favs.replace(/[,，\s]+/g,' ').split(' ').filter(Boolean):[];const r=localCompose(consumed,cfg.theme,fA);toast.classList.remove('show');showR(r)}
+{"sentence":"签文","reason":"一句话解签：这句话想告诉问卦者什么"}`;const resp=await fetch(cfg.apiUrl,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},body:JSON.stringify({model:cfg.model||'moonshot-v1-32k',messages:[{role:'system',content:sys},{role:'user',content:'问卦者当下情绪：'+cfg.theme+'\n\n以下是命签拾取到的文字碎片（共'+consumed.length+'字）：\n'+consumed.join('')+'\n\n请卜算下一个时辰的签文。'}],temperature:.85,max_tokens:500})});const data=await resp.json();const raw=data.choices?.[0]?.message?.content||'';const cl=raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();let r;try{r=JSON.parse(cl)}catch{r={sentence:cl.slice(0,40),reason:''}}toast.classList.remove('show');showR(r);return}catch(e){toast.classList.remove('show')}}
+  toast.classList.add('show');document.getElementById('ai-toast-text').textContent='时辰正在凝聚…';await new Promise(r=>setTimeout(r,800));const fA=cfg.favs?cfg.favs.replace(/[,，\s]+/g,' ').split(' ').filter(Boolean):[];const r=localCompose(consumed,cfg.theme,fA);toast.classList.remove('show');showR(r)}
 function showR(d){ended=true;setTimeout(()=>{document.getElementById('rv-sent').textContent=d.sentence||'…';document.getElementById('rv-reason').textContent=d.reason?'— '+d.reason:'';document.getElementById('rv-total').textContent=total;document.getElementById('rv-eaten').textContent=consumed.length;document.getElementById('rv-holes').textContent=totalHC;document.getElementById('reveal').classList.add('show')},600)}
 
 function render(){
@@ -469,10 +536,10 @@ function render(){
     ctx.save();ctx.globalAlpha=op;ctx.translate(h.x,h.y);ctx.rotate(moveAng);
     // Now we work in local coords where movement direction = +x
 
-    // Helper: draw wobbly circle path
-    function wobblePath(R,intensity){
+    // Helper: draw wobbly circle path (arrow fn — Safari crashes on function decl in block scope)
+    const wobblePath=(R,intensity)=>{
       ctx.beginPath();
-      const n=48;
+      const n=36;
       for(let i=0;i<=n;i++){
         const a=i/n*Math.PI*2;
         let wr=0;for(let k=0;k<h.wobble.length;k++){wr+=Math.sin(a*(k+2)+h.wobble[k])*(intensity/(k+1))}
@@ -481,7 +548,7 @@ function render(){
         const py=Math.sin(a)*rr*squash;
         i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
       }ctx.closePath();
-    }
+    };
 
     // 1. Contact shadow (offset toward +y in world, so rotate back)
     ctx.save();ctx.rotate(-moveAng);
@@ -534,7 +601,7 @@ function render(){
     wobblePath(baseR-1,1.5);ctx.clip();
     ctx.rotate(-moveAng); // render chars upright
     ctx.textAlign='center';ctx.textBaseline='middle';
-    const maxS=Math.min(h.pile.length,80),bR=T.initRadius.v+Math.sqrt(Math.max(h.eaten-1,0))*T.growthRate.v;
+    const maxS=Math.min(h.pile.length,isPhone?40:80),bR=T.initRadius.v+Math.sqrt(Math.max(h.eaten-1,0))*T.growthRate.v;
     const sf=baseR/bR;
     // Top-to-bottom gradient overlay via char alpha
     for(let i=h.pile.length-maxS;i<h.pile.length;i++){
@@ -593,7 +660,8 @@ function render(){
 }
 
 let lastT=performance.now();
-(function loop(ts){const dt=Math.min((ts-lastT)/1000,.05);lastT=ts;physics(dt);render();requestAnimationFrame(loop)})(lastT);
+let errCount=0;
+(function loop(ts){try{const dt=Math.min((ts-lastT)/1000,.05);lastT=ts;physics(dt);render()}catch(e){if(errCount++<3)console.warn('frame error:',e)}requestAnimationFrame(loop)})(lastT);
 </script>
 </body>
 </html>
