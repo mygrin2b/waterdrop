@@ -114,7 +114,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC','Georgia'
 </div></div>
 
 <div class="field"><span class="fl">当下的偏爱 <span class="opt">（命签会主动寻找这些字）</span></span>
-<input type="text" id="inp-fav" placeholder="随心写几个字…  光  远方  自由"></div>
+<input type="text" id="inp-fav" autocomplete="off" placeholder="随心写几个字…  光  远方  自由"></div>
 
 <div class="field"><span class="fl">当下想要选择的文本</span>
 <select id="inp-src">
@@ -138,9 +138,9 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC','Georgia'
 
 <!-- API hidden: triple-tap the deco line to reveal -->
 <div class="cbody" id="api-body">
-<div class="field"><span class="fl">API 地址</span><input type="text" id="inp-api-url" value="https://api.moonshot.cn/v1/chat/completions"></div>
-<div class="field"><span class="fl">API Key</span><input type="password" id="inp-api-key" value="sk-rJECXVRv1JHkzBa2kw0iBtkoSdHI82eYHRMzfvJzrcHZ57GU"></div>
-<div class="field"><span class="fl">模型</span><input type="text" id="inp-api-model" value="moonshot-v1-32k"></div>
+<div class="field"><span class="fl">API 地址</span><input type="text" id="inp-api-url" autocomplete="off" value="https://api.moonshot.cn/v1/chat/completions"></div>
+<div class="field"><span class="fl">API Key</span><input type="password" id="inp-api-key" autocomplete="off" data-1p-ignore value="sk-rJECXVRv1JHkzBa2kw0iBtkoSdHI82eYHRMzfvJzrcHZ57GU"></div>
+<div class="field"><span class="fl">模型</span><input type="text" id="inp-api-model" autocomplete="off" value="moonshot-v1-32k"></div>
 </div>
 
 <div class="sep"></div>
